@@ -79,6 +79,16 @@ export default {
           500: '#5F6A75', // texto terciario / deshabilitado sobre cal
         },
 
+        // 🔵 PROPUESTA, no ratificada. Ver el bloque largo de src/index.css.
+        // Un solo uso legitimo: el bloque de separaciones que vencen en 3 dias
+        // o menos, en la pantalla Hoy. NUNCA para el estado de pago (el brief
+        // de diseno lo prohibe expresamente y esa regla no cambia).
+        alerta: {
+          DEFAULT: 'hsl(var(--alerta))',
+          foreground: 'hsl(var(--alerta-foreground))',
+          suave: 'hsl(var(--alerta-suave))',
+        },
+
         // ---------------------------------------------------------------
         // Tokens semanticos de shadcn/ui.
         // Apuntan a las variables CSS de src/index.css, que a su vez estan

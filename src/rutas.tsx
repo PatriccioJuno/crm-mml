@@ -2,8 +2,10 @@ import { Navigate, type RouteObject } from 'react-router-dom'
 import { Cascaron } from '@/componentes/layout/Cascaron'
 import { PantallaPendiente } from '@/componentes/layout/PantallaPendiente'
 import { PantallaEntrar } from '@/paginas/entrar/PantallaEntrar'
+import { PantallaHoy } from '@/paginas/hoy'
+import { PantallaRegistroRapido } from '@/paginas/registro-rapido'
 import { RutaProtegida } from '@/auth/RutaProtegida'
-import { SECCIONES } from '@/auth/secciones'
+import { SECCIONES, type ClaveSeccion } from '@/auth/secciones'
 
 /**
  * Mapa de rutas.
@@ -12,17 +14,22 @@ import { SECCIONES } from '@/auth/secciones'
  * para que el menu lateral y el enrutador no puedan desincronizarse: si una
  * seccion existe en el menu, existe como ruta, y con el mismo filtro de rol.
  *
- * NINGUNA esta escrita todavia: todas resuelven al marcador de posicion. Cada
- * una tiene ya su carpeta en src/paginas/ — al implementarla, se reemplaza aqui
- * el `PantallaPendiente` por el import de esa carpeta.
+ * Escritas: `hoy` y `registro-rapido`. Las demas siguen resolviendo al marcador
+ * de posicion; cada una tiene ya su carpeta en src/paginas/ y al implementarla
+ * se anade a `ESCRITAS`, sin tocar nada mas.
  *
  * Fuente de la lista: 01-documentacion\02-ESPECIFICACION-TECNICA.md §4.
  */
+const ESCRITAS: Partial<Record<ClaveSeccion, JSX.Element>> = {
+  hoy: <PantallaHoy />,
+  'registro-rapido': <PantallaRegistroRapido />,
+}
+
 const pantallas: RouteObject[] = SECCIONES.map((seccion) => ({
   path: seccion.ruta.replace(/^\//, ''),
   element: (
     <RutaProtegida seccion={seccion.clave}>
-      <PantallaPendiente nombre={seccion.etiqueta} />
+      {ESCRITAS[seccion.clave] ?? <PantallaPendiente nombre={seccion.etiqueta} />}
     </RutaProtegida>
   ),
 }))
@@ -45,8 +52,32 @@ export const rutas: RouteObject[] = [
       </RutaProtegida>
     ),
     children: [
+      // «/» es la pantalla de inicio. Se redirige a /hoy en vez de montar Hoy
+      // en las dos rutas: asi la pantalla tiene una sola direccion, y el enlace
+      // activo del menu lateral (que apunta a /hoy) no se apaga al entrar por
+      // la raiz.
       { index: true, element: <Navigate to="/hoy" replace /> },
+
+      // Atajo pedido para el live: /rapido es mas corto de teclear en un movil
+      // que /registro-rapido. La ruta canonica sigue siendo la del menu, para
+      // que SECCIONES siga siendo la unica lista de pantallas.
+      { path: 'rapido', element: <Navigate to="/registro-rapido" replace /> },
+
       ...pantallas,
+
+      // La ficha de persona: destino del boton «abrir ficha» de cada fila de
+      // Hoy. La pantalla todavia no esta escrita — la ruta existe para que el
+      // boton no lleve a «pagina no encontrada», y lo que se ve dice la verdad:
+      // 🔴 pendiente.
+      {
+        path: 'personas/:personaId',
+        element: (
+          <RutaProtegida seccion="personas">
+            <PantallaPendiente nombre="Ficha de persona" />
+          </RutaProtegida>
+        ),
+      },
+
       { path: '*', element: <PantallaPendiente nombre="Página no encontrada" /> },
     ],
   },

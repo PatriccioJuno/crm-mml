@@ -71,6 +71,31 @@
     --destructive: 209 64% 11%;
     --destructive-foreground: 40 40% 94%;
 
+    /* --------------------------------------------------------------------
+       ROJO DE ALERTA — 🔵 PROPUESTA, NO RATIFICADA
+       --------------------------------------------------------------------
+       El manual de marca NO tiene rojo, y BRIEF-CLAUDE-DESIGN.md prohibe
+       introducir rojo/verde de semaforo. Esa prohibicion esta escrita para
+       el ESTADO DE PAGO de Cobranza (al dia / en mora), que debe resolverse
+       con texto, icono y peso tipografico.
+
+       Este token existe porque el encargo de la pantalla Hoy (Patriccio,
+       10/09/2026) pide expresamente que el bloque de separaciones que vencen
+       en 3 dias o menos vaya EN ROJO. Se acota asi:
+
+         - Un unico uso legitimo: el bloque 1 de la pantalla Hoy (el reloj de
+           devolucion del S/500, que es un plazo legal). En ningun otro sitio.
+         - NO se usa para estado de pago. Esa regla del brief sigue en pie.
+         - #A61B12 = 6.75:1 sobre cal y 7.54:1 sobre blanco (cumple WCAG AA);
+           blanco sobre el da 7.54:1. No aclararlo sin recalcular contraste.
+
+       🔵 Queda PENDIENTE que Walter lo ratifique y se incorpore al
+       MANUAL-DE-MARCA-MML.md. Si lo rechaza, se borra este token y el bloque
+       1 pasa a distinguirse por peso tipografico como el resto. */
+    --alerta: 4 80% 36%;
+    --alerta-foreground: 0 0% 100%;
+    --alerta-suave: 8 60% 96%;  /* fondo tenue para la tarjeta, no para texto */
+
     --border: 39 30% 83%;
     --input: 39 30% 83%;
     --ring: 209 64% 16%;
