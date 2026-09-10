@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { entero, leerLote, monto, reventar, texto, type Lote } from '@/lib/lectura'
 
 /**
  * Datos de la pantalla Hoy.
@@ -12,6 +13,12 @@ import { supabase } from '@/lib/supabase'
  * src/auth/tipos-sesion.ts: cada fila que llega de la base pasa por un lector
  * que la COMPRUEBA y devuelve `null` si no cumple. Una fila rara se descarta y
  * se cuenta; nunca se pinta un dato que no se pudo verificar.
+ *
+ * Las utilidades de esa comprobacion (`texto`, `entero`, `monto`, `leerLote`)
+ * vivian aqui; el 10/09/2026 se mudaron a src/lib/lectura.ts, cuando el embudo
+ * y el inventario iban a necesitar una segunda y una tercera copia. El tipo
+ * `Lote` se re-exporta mas abajo para no romper a quien ya lo importaba de
+ * este archivo.
  *
  * Cuando `npm run tipos` funcione, estos tipos pasan a derivarse de `Database`
  * y los lectores se quedan solo como validacion de frontera.
@@ -42,77 +49,15 @@ import { supabase } from '@/lib/supabase'
 export const DIAS_VIGILANCIA_SEPARACION = 3
 
 /**
- * Etiquetas de los 10 estados del embudo.
- * Fuente: `create type estado_embudo` en 01-schema.sql (seccion 0), en el
- * mismo orden. No se anaden ni se renombran estados aqui.
+ * Los 10 estados del embudo y sus etiquetas viven en src/lib/embudo.ts, que es
+ * de quien son. Se re-exportan aqui porque esta pantalla ya los importaba de
+ * este archivo, y porque tener dos mapas de etiquetas en dos modulos es como
+ * empiezan a llamarse distinto en dos pantallas.
  */
-export const ETIQUETA_ESTADO: Readonly<Record<string, string>> = {
-  '01_prospecto_captado': 'Prospecto captado',
-  '02_contactado': 'Contactado',
-  '03_registrado': 'Registrado',
-  '04_asistente': 'Asistente',
-  '05_separacion': 'Separación',
-  '06_calificado': 'Calificado',
-  '07_contrato': 'Contrato',
-  '08_inicial_cobrada': 'Inicial cobrada',
-  '09_pago_total': 'Pago total',
-  '10_posventa': 'Posventa',
-}
+export { ETIQUETA_ESTADO, etiquetaEstado } from '@/lib/embudo'
 
-export function etiquetaEstado(estado: string): string {
-  // Un estado que este cliente no conoce se muestra crudo, no se maquilla:
-  // asi se ve que el enum de la base cambio y la interfaz no.
-  return ETIQUETA_ESTADO[estado] ?? estado
-}
-
-// ---------------------------------------------------------------------------
-// Utilidades de lectura
-// ---------------------------------------------------------------------------
-
-function texto(valor: unknown): string | null {
-  return typeof valor === 'string' ? valor : null
-}
-
-function entero(valor: unknown): number | null {
-  return typeof valor === 'number' && Number.isFinite(valor) ? valor : null
-}
-
-/**
- * Un `numeric` de Postgres llega por PostgREST como CADENA, no como numero
- * (lo hace a proposito: un `numeric(14,2)` no cabe siempre en un `number` de
- * JavaScript sin perder precision). Por eso los montos se conservan tal cual
- * llegan y se le pasan a `formatearMonto`, que ya acepta las dos formas. No se
- * convierten a `number` aqui: redondear dinero de camino a la pantalla es
- * justo lo que no se debe hacer.
- */
-function monto(valor: unknown): number | string | null {
-  if (typeof valor === 'number' && Number.isFinite(valor)) return valor
-  if (typeof valor === 'string' && valor.trim() !== '') return valor
-  return null
-}
-
-/** Resultado de una consulta: filas leidas + filas descartadas por ilegibles. */
-export type Lote<T> = { filas: T[]; descartadas: number }
-
-function leerLote<T>(datos: unknown, leer: (fila: unknown) => T | null): Lote<T> {
-  if (!Array.isArray(datos)) return { filas: [], descartadas: 0 }
-
-  const filas: T[] = []
-  let descartadas = 0
-  for (const cruda of datos) {
-    const fila = leer(cruda)
-    if (fila === null) descartadas += 1
-    else filas.push(fila)
-  }
-  return { filas, descartadas }
-}
-
-/** Los errores de la base se propagan con su texto, sin adornos. */
-function reventar(contexto: string, error: { message: string } | null): void {
-  if (error !== null) {
-    throw new Error(`${contexto}: ${error.message}`)
-  }
-}
+/** Se re-exporta para no romper a quien ya lo importaba de aqui. */
+export type { Lote } from '@/lib/lectura'
 
 // ---------------------------------------------------------------------------
 // 1 · SEPARACIONES EN VIGILANCIA

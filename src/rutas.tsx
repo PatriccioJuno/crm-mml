@@ -1,8 +1,10 @@
 import { Navigate, type RouteObject } from 'react-router-dom'
 import { Cascaron } from '@/componentes/layout/Cascaron'
 import { PantallaPendiente } from '@/componentes/layout/PantallaPendiente'
+import { PantallaEmbudo } from '@/paginas/embudo'
 import { PantallaEntrar } from '@/paginas/entrar/PantallaEntrar'
 import { PantallaHoy } from '@/paginas/hoy'
+import { PantallaInventario } from '@/paginas/inventario'
 import { PantallaRegistroRapido } from '@/paginas/registro-rapido'
 import { RutaProtegida } from '@/auth/RutaProtegida'
 import { SECCIONES, type ClaveSeccion } from '@/auth/secciones'
@@ -14,15 +16,17 @@ import { SECCIONES, type ClaveSeccion } from '@/auth/secciones'
  * para que el menu lateral y el enrutador no puedan desincronizarse: si una
  * seccion existe en el menu, existe como ruta, y con el mismo filtro de rol.
  *
- * Escritas: `hoy` y `registro-rapido`. Las demas siguen resolviendo al marcador
- * de posicion; cada una tiene ya su carpeta en src/paginas/ y al implementarla
- * se anade a `ESCRITAS`, sin tocar nada mas.
+ * Escritas: `hoy`, `registro-rapido`, `embudo` e `inventario`. Las demas siguen
+ * resolviendo al marcador de posicion; cada una tiene ya su carpeta en
+ * src/paginas/ y al implementarla se anade a `ESCRITAS`, sin tocar nada mas.
  *
  * Fuente de la lista: 01-documentacion\02-ESPECIFICACION-TECNICA.md §4.
  */
 const ESCRITAS: Partial<Record<ClaveSeccion, JSX.Element>> = {
   hoy: <PantallaHoy />,
   'registro-rapido': <PantallaRegistroRapido />,
+  embudo: <PantallaEmbudo />,
+  inventario: <PantallaInventario />,
 }
 
 const pantallas: RouteObject[] = SECCIONES.map((seccion) => ({

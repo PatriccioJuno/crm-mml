@@ -3,8 +3,13 @@
 Aplicación web de una sola página. CRM operativo de **SCP Inmobiliaria** para el proyecto
 **Mercado Media Luna (MML)**.
 
-**Estado: 🔵 andamiaje.** No hay ninguna pantalla escrita todavía. Lo que existe es el
-esqueleto: dependencias, tema de marca, rutas, cliente de Supabase y estructura de carpetas.
+**Estado: 🟡 en construcción.** De las 8 pantallas del MVP-1 hay **4 escritas** — Hoy, Registro
+rápido, Embudo e Inventario. Las otras cuatro (Persona, Separaciones, Cobranza, Reportes) siguen
+🔴 pendientes y resuelven al marcador de posición.
+
+> **Antes de abrir Embudo o Inventario** hay que ejecutar en Supabase, por orden,
+> `../sql/07-vistas-hoy.sql` y `../sql/08-vistas-embudo-e-inventario.sql`. Sin sus vistas las dos
+> pantallas no tienen de dónde leer, y lo dicen con ese mismo mensaje en lugar de salir vacías.
 
 Las reglas del proyecto están en [`../../CLAUDE.md`](../../CLAUDE.md) y mandan sobre este
 archivo.
@@ -53,6 +58,9 @@ src/
   lib/supabase.ts        cliente único de Supabase (solo clave anon)
   lib/tipos.ts           tipos GENERADOS desde la base — vacío a propósito
   lib/fechas.ts          formateo en español y "vence en N días" (date-fns)
+  lib/lectura.ts         lectores de frontera: lo que llega de la base se comprueba
+  lib/embudo.ts          los 10 estados, el umbral de días y mover una oportunidad
+  lib/inventario.ts      los dos semáforos, y por qué una unidad no se puede ofrecer
   lib/utils.ts           cn() para shadcn/ui
   auth/ContextoSesion    usuario + perfil + rol, y entrar()/salir()
   auth/RutaProtegida     envoltorio de cada ruta
@@ -61,7 +69,8 @@ src/
   componentes/ui/        shadcn/ui — no escribir a mano, traer con `npx shadcn add`
   componentes/layout/    cascarón, barra lateral
   paginas/entrar/        pantalla de inicio de sesión
-  paginas/<pantalla>/    una carpeta por pantalla (las 8 del MVP-1, todas vacías)
+  paginas/<pantalla>/    una carpeta por pantalla (las 8 del MVP-1; 4 escritas,
+                         cada una con su README explicando lo que decide)
   hooks/                 hooks de datos (TanStack Query)
   rutas.tsx              mapa de rutas
 ```
