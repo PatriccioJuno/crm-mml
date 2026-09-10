@@ -24,6 +24,25 @@ npm run dev                  # http://localhost:5173
 | `npm run dev` | servidor de desarrollo |
 | `npm run build` | comprueba tipos (`tsc -b`) y compila a `dist/` |
 | `npm run preview` | sirve `dist/` para revisarlo |
+| `npm run tipos` | regenera `src/lib/tipos.ts` desde la base (ver abajo) |
+
+---
+
+## Tipos generados
+
+```bash
+npx supabase login     # una sola vez por máquina; abre el navegador
+npm run tipos
+```
+
+**Dónde está el `project-id`:** en el panel de Supabase, en *Project Settings → General →
+Reference ID* — es también el subdominio de la URL del proyecto
+(`https://<project-id>.supabase.co`) y de la del panel
+(`https://supabase.com/dashboard/project/<project-id>`).
+
+🔴 **Todavía sin ejecutar:** `npm run tipos` falla con
+`LegacyPlatformAuthRequiredError` mientras no se haya hecho `supabase login`. Hasta entonces
+`src/lib/tipos.ts` sigue vacío a propósito y el cliente queda sin tipar por esquema.
 
 ---
 
@@ -31,15 +50,20 @@ npm run dev                  # http://localhost:5173
 
 ```
 src/
-  lib/supabase.ts     cliente único de Supabase (solo clave anon)
-  lib/tipos.ts        tipos GENERADOS desde la base — vacío a propósito
-  lib/fechas.ts       formateo en español y "vence en N días" (date-fns)
-  lib/utils.ts        cn() para shadcn/ui
-  componentes/ui/     shadcn/ui — no escribir a mano, traer con `npx shadcn add`
-  componentes/layout/ cascarón, barra lateral
-  paginas/<pantalla>/ una carpeta por pantalla (las 8 del MVP-1, todas vacías)
-  hooks/              hooks de datos (TanStack Query)
-  rutas.tsx           mapa de rutas
+  lib/supabase.ts        cliente único de Supabase (solo clave anon)
+  lib/tipos.ts           tipos GENERADOS desde la base — vacío a propósito
+  lib/fechas.ts          formateo en español y "vence en N días" (date-fns)
+  lib/utils.ts           cn() para shadcn/ui
+  auth/ContextoSesion    usuario + perfil + rol, y entrar()/salir()
+  auth/RutaProtegida     envoltorio de cada ruta
+  auth/secciones.ts      qué secciones ve cada rol (copiado de RLS)
+  auth/tipos-sesion.ts   contrato mínimo de `perfiles` + lector en runtime
+  componentes/ui/        shadcn/ui — no escribir a mano, traer con `npx shadcn add`
+  componentes/layout/    cascarón, barra lateral
+  paginas/entrar/        pantalla de inicio de sesión
+  paginas/<pantalla>/    una carpeta por pantalla (las 8 del MVP-1, todas vacías)
+  hooks/                 hooks de datos (TanStack Query)
+  rutas.tsx              mapa de rutas
 ```
 
 ## Stack
@@ -77,6 +101,35 @@ sobre fondo claro) **no** es el ámbar: el ámbar tiene su propio token y se apl
 La explicación completa está comentada en `tailwind.config.js` y en `src/index.css`.
 
 Tipografía: **Archivo**, una sola familia, pesos 900 / 700 / 400.
+
+---
+
+## Sesión y roles
+
+Correo y contraseña con Supabase Auth. **No hay pantalla de registro**: las cuentas las crea
+Dirección en el panel de Supabase (*Authentication → Users*), el disparador `t_nuevo_usuario`
+crea el perfil con rol `lectura`, y Dirección lo eleva después. `/registro` redirige a
+`/entrar`.
+
+| Pieza | Dónde | Qué hace |
+|---|---|---|
+| `<ProveedorSesion>` | `src/auth/ContextoSesion.tsx` | expone `usuario`, `perfil`, `rol`, `aviso`, `entrar()`, `salir()` |
+| `<RutaProtegida>` | `src/auth/RutaProtegida.tsx` | envuelve cada ruta; sin sesión → `/entrar` |
+| `SECCIONES` | `src/auth/secciones.ts` | qué secciones ve cada rol, y de qué política de RLS sale cada fila |
+
+Si el perfil tiene `activo = false`, el contexto **cierra la sesión** y `/entrar` muestra
+*«Tu acceso está desactivado. Habla con Walter.»*
+
+### 🔴 El menú no es seguridad
+
+Ocultar un enlace no protege nada: la ruta se puede escribir a mano y `supabase-js` se puede
+llamar desde la consola del navegador. **Lo único que protege los datos es RLS**
+(`../sql/02-rls.sql`), evaluado en el servidor con `auth.uid()`.
+
+Por eso `src/auth/secciones.ts` no *define* permisos: los **copia** de RLS, y cada sección cita
+la política de la que sale. Si RLS cambia, esto se actualiza detrás — nunca al revés. Con las
+políticas actuales los cinco roles pueden **leer** casi todo, así que hoy el menú solo esconde
+*Registro rápido* a `contabilidad` y `lectura` (no tienen `INSERT` en `personas`).
 
 ---
 

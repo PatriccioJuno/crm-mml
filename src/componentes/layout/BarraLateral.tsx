@@ -1,16 +1,10 @@
+import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import {
-  Banknote,
-  Boxes,
-  FileCheck2,
-  LayoutList,
-  Sun,
-  UserPlus,
-  Users,
-  BarChart3,
-  type LucideIcon,
-} from 'lucide-react'
+import { LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useSesion } from '@/auth/ContextoSesion'
+import { seccionesVisibles } from '@/auth/secciones'
+import { ETIQUETA_ROL } from '@/auth/tipos-sesion'
 
 /**
  * Barra lateral. Es la superficie azul principal de la aplicacion: junto con
@@ -21,32 +15,30 @@ import { cn } from '@/lib/utils'
  *
  * Iconografia: lucide-react, un solo estilo de linea en toda la interfaz.
  * No mezclar con otro set.
+ *
+ * ###########################################################################
+ * #  El menu se filtra por rol desde `seccionesVisibles()`. Eso es COMODIDAD: #
+ * #  quita de la vista lo que a ese rol le saldria vacio o le fallaria al     #
+ * #  guardar. NO es seguridad — quien protege los datos es RLS en la base     #
+ * #  (02-codigo\sql\02-rls.sql). Ver el bloque de src/auth/secciones.ts.      #
+ * ###########################################################################
  */
-
-type Enlace = {
-  ruta: string
-  etiqueta: string
-  Icono: LucideIcon
-}
-
-/**
- * Las ocho pantallas del MVP-1.
- * Fuente: D:\SCPCMO\07-crm\01-documentacion\02-ESPECIFICACION-TECNICA.md §4.
- * Ninguna esta escrita todavia: todas las rutas resuelven al marcador de
- * posicion hasta que se implemente su pantalla.
- */
-const ENLACES: readonly Enlace[] = [
-  { ruta: '/hoy', etiqueta: 'Hoy', Icono: Sun },
-  { ruta: '/embudo', etiqueta: 'Embudo', Icono: LayoutList },
-  { ruta: '/personas', etiqueta: 'Personas', Icono: Users },
-  { ruta: '/registro-rapido', etiqueta: 'Registro rápido', Icono: UserPlus },
-  { ruta: '/inventario', etiqueta: 'Inventario', Icono: Boxes },
-  { ruta: '/separaciones', etiqueta: 'Separaciones', Icono: FileCheck2 },
-  { ruta: '/cobranza', etiqueta: 'Cobranza', Icono: Banknote },
-  { ruta: '/reportes', etiqueta: 'Reportes', Icono: BarChart3 },
-] as const
-
 export function BarraLateral() {
+  const { perfil, salir } = useSesion()
+  const [saliendo, setSaliendo] = useState(false)
+
+  // El cascaron va detras de <RutaProtegida>, asi que aqui siempre hay perfil.
+  if (perfil === null) return null
+
+  const enlaces = seccionesVisibles(perfil.rol)
+
+  async function alSalir() {
+    setSaliendo(true)
+    await salir()
+    // No hace falta navegar: al desaparecer la sesion, <RutaProtegida> manda
+    // a /entrar por su cuenta.
+  }
+
   return (
     <aside className="flex w-64 shrink-0 flex-col bg-azul text-cal">
       {/* ---- Logotipo de texto ----
@@ -68,7 +60,7 @@ export function BarraLateral() {
 
       <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label="Navegación principal">
         <ul className="space-y-1">
-          {ENLACES.map(({ ruta, etiqueta, Icono }) => (
+          {enlaces.map(({ ruta, etiqueta, Icono }) => (
             <li key={ruta}>
               <NavLink
                 to={ruta}
@@ -90,9 +82,35 @@ export function BarraLateral() {
         </ul>
       </nav>
 
+      {/* ---- Quien esta dentro, y como salir ---- */}
       <div className="border-t border-azul-600 px-6 py-4">
+        <p className="truncate text-sm font-bold text-cal" title={perfil.nombre}>
+          {perfil.nombre}
+        </p>
         {/* azul-300 sobre azul = 4.94:1 (cumple WCAG AA para texto pequeño).
             No bajar a azul-400: sobre azul da 2.78:1 y no cumple. */}
+        <p className="mt-0.5 text-[0.6875rem] font-bold uppercase tracking-[0.16em] text-azul-300">
+          {ETIQUETA_ROL[perfil.rol]}
+        </p>
+
+        <button
+          type="button"
+          onClick={() => void alSalir()}
+          disabled={saliendo}
+          className={cn(
+            'mt-3 flex w-full items-center gap-2 rounded-md px-2 py-1.5 -ml-2',
+            'text-sm text-azul-300 transition-colors',
+            'hover:bg-azul-600 hover:text-cal',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ambar',
+            'disabled:pointer-events-none disabled:opacity-60',
+          )}
+        >
+          <LogOut className="h-4 w-4 shrink-0" aria-hidden="true" strokeWidth={1.75} />
+          <span>{saliendo ? 'Cerrando…' : 'Salir'}</span>
+        </button>
+      </div>
+
+      <div className="border-t border-azul-600 px-6 py-4">
         <p className="text-[0.6875rem] leading-relaxed text-azul-300">
           Datos duros: solo desde <code className="font-bold">parametros</code>, con su fuente
           en <code className="font-bold">00-fuente-de-verdad</code>.
