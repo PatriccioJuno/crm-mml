@@ -1,0 +1,121 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================================================
+   TEMA DE shadcn/ui ENLAZADO A LA MARCA MERCADO MEDIA LUNA
+   --------------------------------------------------------------------------
+   Aqui se reemplaza la paleta gris por defecto de shadcn/ui por los cuatro
+   tokens del manual de marca. Los valores estan en HSL sin la funcion hsl()
+   porque asi lo exige shadcn (tailwind.config.js los envuelve en hsl(var(--x))).
+
+     azul   #0F2A44  ->  209 64% 16%
+     cal    #F6F2EA  ->   40 40% 94%
+     ambar  #F2A93B  ->   36 88% 59%
+     suelo  #14181C  ->  210 17%  9%
+
+   ##########################################################################
+   #  POR QUE `--accent` NO ES EL AMBAR                                     #
+   #                                                                        #
+   #  Regla dura de marca: el ambar #F2A93B NUNCA sobre superficie clara    #
+   #  (contraste 1.79:1 sobre cal — incumple WCAG). Solo sobre azul.        #
+   #                                                                        #
+   #  shadcn/ui usa `--accent` como *superficie de hover sobre fondo claro*:#
+   #  elementos de menu, botones fantasma, filas de tabla. Si se pintara de #
+   #  ambar, cada hover de la interfaz seria una violacion de la regla.     #
+   #                                                                        #
+   #  Por eso:                                                              #
+   #    --accent          = tinte suave de cal (hover, neutro y accesible)  #
+   #    --ambar / --ambar-foreground = el acento REAL de marca, que se      #
+   #      aplica a mano y unicamente dentro de bloques con fondo azul.      #
+   #                                                                        #
+   #  Lo mismo con --ring: un anillo de foco ambar sobre cal seria          #
+   #  invisible, asi que el foco es azul.                                   #
+   ##########################################################################
+   ========================================================================== */
+
+@layer base {
+  :root {
+    /* --- Lienzo de trabajo: Blanco Cal (30 % de la superficie) --- */
+    --background: 40 40% 94%;
+    --foreground: 210 17% 9%;
+
+    /* Tarjetas: blanco puro sobre el cal, para separar sin sombras apiladas */
+    --card: 0 0% 100%;
+    --card-foreground: 210 17% 9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 17% 9%;
+
+    /* --- Primario: Azul Noche (60 % de la superficie) --- */
+    --primary: 209 64% 16%;
+    --primary-foreground: 40 40% 94%;
+
+    /* Secundario y apagados: tintes de cal, nunca colores nuevos */
+    --secondary: 40 30% 89%;
+    --secondary-foreground: 209 64% 16%;
+    --muted: 40 30% 90%;
+    --muted-foreground: 210 11% 42%;
+
+    /* Superficie de hover sobre fondo claro. NO es el ambar. Ver bloque arriba. */
+    --accent: 40 33% 88%;
+    --accent-foreground: 209 64% 16%;
+
+    /* --- Acento REAL de marca: Ambar Luna (max. 10 %, SOLO sobre azul) --- */
+    --ambar: 36 88% 59%;
+    --ambar-foreground: 210 17% 9%; /* Negro Suelo sobre ambar: 8.9:1, cumple */
+
+    /* El manual de marca no define un rojo. Hasta que Walter apruebe uno,
+       `destructive` es el azul mas oscuro: se distingue por peso y por texto,
+       no por un color que no existe en la marca.
+       [PENDIENTE] color semantico de error — no inventarlo aqui. */
+    --destructive: 209 64% 11%;
+    --destructive-foreground: 40 40% 94%;
+
+    --border: 39 30% 83%;
+    --input: 39 30% 83%;
+    --ring: 209 64% 16%;
+
+    /* Un solo radio de esquina en toda la interfaz. */
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    /* Cifras del mismo ancho: una columna de montos se compara de un vistazo.
+       Regla del brief de diseno para tablas financieras. */
+    font-variant-numeric: tabular-nums;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  /* Solo los tres pesos de Archivo: 900 titulos, 700 destacados, 400 cuerpo. */
+  h1,
+  h2 {
+    @apply font-black tracking-tight;
+  }
+
+  h3,
+  h4 {
+    @apply font-bold;
+  }
+}
+
+@layer utilities {
+  /* Acento de marca. Usar UNICAMENTE dentro de un contenedor con fondo azul.
+     Si lo ves sobre cal o blanco, es un error de implementacion. */
+  .acento-ambar {
+    color: hsl(var(--ambar));
+  }
+
+  .bloque-ambar {
+    background-color: hsl(var(--ambar));
+    color: hsl(var(--ambar-foreground));
+  }
+}

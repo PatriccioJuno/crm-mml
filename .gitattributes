@@ -1,0 +1,2 @@
+# Normaliza saltos de linea: el repo guarda LF, Windows trabaja con CRLF.
+* text=auto eol=lf

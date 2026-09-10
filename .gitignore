@@ -1,0 +1,44 @@
+# --- Secretos (esta sección va PRIMERO, y existe desde antes del primer commit) ---
+# Regla de 07-crm/CLAUDE.md §5: la clave service_role jamás se versiona.
+.env
+.env.*
+!.env.example
+env.local
+env.*.local
+*.pem
+*.key
+
+# --- Dependencias y build ---
+node_modules/
+dist/
+dist-ssr/
+build/
+.vite/
+*.local
+
+# --- Editores y sistema operativo ---
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# --- Logs ---
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Configuracion local de Claude Code (por maquina, no del proyecto)
+.claude/settings.local.json
+
+# Cache incremental de TypeScript
+*.tsbuildinfo
