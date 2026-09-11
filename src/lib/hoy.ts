@@ -1,5 +1,10 @@
 import { supabase } from '@/lib/supabase'
-import { entero, leerLote, monto, reventar, texto, type Lote } from '@/lib/lectura'
+import { entero, leerLote, reventar, texto, type Lote } from '@/lib/lectura'
+import {
+  COLUMNAS_SEPARACION,
+  interpretarSeparacion,
+  type SeparacionVigilada,
+} from '@/lib/separaciones'
 
 /**
  * Datos de la pantalla Hoy.
@@ -64,65 +69,16 @@ export type { Lote } from '@/lib/lectura'
 // ---------------------------------------------------------------------------
 
 /**
- * Una separacion vigilada, con SUS DOS RELOJES POR SEPARADO (regla R4).
+ * El tipo y el lector de una separacion vigilada viven en
+ * src/lib/separaciones.ts, que es de quien son: los dos relojes son la regla
+ * R4 y no puede haber dos criterios para leerlos. Se re-exporta el tipo porque
+ * la pantalla Hoy ya lo importaba de aqui.
  *
- * Los dos plazos son campos distintos y aqui se quedan distintos: no hay un
- * `diasParaVencer` unico, porque no existe tal cosa. Uno es el derecho de
- * devolucion contado desde el deposito efectivo; el otro, la vigencia del
- * precio despues del evento. Mezclarlos es un problema legal, no un detalle
- * de presentacion.
+ * Lo que si se queda en este archivo son las DOS CONSULTAS de abajo: son los
+ * bloques 0 y 1 de la pantalla Hoy, con su ventana de vigilancia, y no tienen
+ * nada que hacer en el modulo de separaciones.
  */
-export type SeparacionVigilada = {
-  id: string
-  personaId: string | null
-  oportunidadId: string | null
-  nombreCompleto: string
-  codigoUnidad: string | null
-  /** Se conserva como llega (R7: siempre junto a su moneda, nunca suelto). */
-  monto: number | string | null
-  montoMoneda: string | null
-  estado: string
-  /** RELOJ 1 · derecho de devolucion. */
-  fechaLimiteDevolucion: string | null
-  diasParaFinDevolucion: number | null
-  /** RELOJ 2 · vigencia del precio. Independiente del anterior. */
-  fechaLimitePrecio: string | null
-  diasParaFinPrecio: number | null
-  verificadaEl: string | null
-  esperaVerificacion: boolean
-}
-
-const COLUMNAS_SEPARACION =
-  'id, persona_id, oportunidad_id, nombre_completo, codigo_unidad, monto, monto_moneda, ' +
-  'estado, fecha_limite_devolucion, dias_para_fin_devolucion, fecha_limite_precio, ' +
-  'dias_para_fin_precio, verificada_el, espera_verificacion_de_walter'
-
-function interpretarSeparacion(fila: unknown): SeparacionVigilada | null {
-  if (typeof fila !== 'object' || fila === null) return null
-  const f = fila as Record<string, unknown>
-
-  const id = texto(f['id'])
-  const nombreCompleto = texto(f['nombre_completo'])
-  const estado = texto(f['estado'])
-  if (id === null || nombreCompleto === null || estado === null) return null
-
-  return {
-    id,
-    personaId: texto(f['persona_id']),
-    oportunidadId: texto(f['oportunidad_id']),
-    nombreCompleto,
-    codigoUnidad: texto(f['codigo_unidad']),
-    monto: monto(f['monto']),
-    montoMoneda: texto(f['monto_moneda']),
-    estado,
-    fechaLimiteDevolucion: texto(f['fecha_limite_devolucion']),
-    diasParaFinDevolucion: entero(f['dias_para_fin_devolucion']),
-    fechaLimitePrecio: texto(f['fecha_limite_precio']),
-    diasParaFinPrecio: entero(f['dias_para_fin_precio']),
-    verificadaEl: texto(f['verificada_el']),
-    esperaVerificacion: f['espera_verificacion_de_walter'] === true,
-  }
-}
+export type { SeparacionVigilada } from '@/lib/separaciones'
 
 /**
  * Bloque 1 · separaciones cuyo plazo se acaba en `DIAS_VIGILANCIA_SEPARACION`

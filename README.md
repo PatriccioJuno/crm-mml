@@ -3,13 +3,16 @@
 Aplicación web de una sola página. CRM operativo de **SCP Inmobiliaria** para el proyecto
 **Mercado Media Luna (MML)**.
 
-**Estado: 🟡 en construcción.** De las 8 pantallas del MVP-1 hay **4 escritas** — Hoy, Registro
-rápido, Embudo e Inventario. Las otras cuatro (Persona, Separaciones, Cobranza, Reportes) siguen
+**Estado: 🟡 en construcción.** De las 8 pantallas del MVP-1 hay **5 escritas** — Hoy, Registro
+rápido, Embudo, Inventario y Separaciones. Las otras tres (Persona, Cobranza, Reportes) siguen
 🔴 pendientes y resuelven al marcador de posición.
 
 > **Antes de abrir Embudo o Inventario** hay que ejecutar en Supabase, por orden,
 > `../sql/07-vistas-hoy.sql` y `../sql/08-vistas-embudo-e-inventario.sql`. Sin sus vistas las dos
 > pantallas no tienen de dónde leer, y lo dicen con ese mismo mensaje en lugar de salir vacías.
+>
+> **Antes de abrir Separaciones**, además, `../sql/09-separaciones-storage.sql`: crea el bucket
+> privado `comprobantes` donde se sube el voucher del depósito.
 
 Las reglas del proyecto están en [`../../CLAUDE.md`](../../CLAUDE.md) y mandan sobre este
 archivo.
@@ -61,6 +64,8 @@ src/
   lib/lectura.ts         lectores de frontera: lo que llega de la base se comprueba
   lib/embudo.ts          los 10 estados, el umbral de días y mover una oportunidad
   lib/inventario.ts      los dos semáforos, y por qué una unidad no se puede ofrecer
+  lib/parametros.ts      el único sitio donde puede vivir una cifra; PENDIENTE si está en rojo
+  lib/separaciones.ts    el S/500, los dos relojes como campos distintos (R4) y el voucher
   lib/utils.ts           cn() para shadcn/ui
   auth/ContextoSesion    usuario + perfil + rol, y entrar()/salir()
   auth/RutaProtegida     envoltorio de cada ruta
@@ -69,7 +74,7 @@ src/
   componentes/ui/        shadcn/ui — no escribir a mano, traer con `npx shadcn add`
   componentes/layout/    cascarón, barra lateral
   paginas/entrar/        pantalla de inicio de sesión
-  paginas/<pantalla>/    una carpeta por pantalla (las 8 del MVP-1; 4 escritas,
+  paginas/<pantalla>/    una carpeta por pantalla (las 8 del MVP-1; 5 escritas,
                          cada una con su README explicando lo que decide)
   hooks/                 hooks de datos (TanStack Query)
   rutas.tsx              mapa de rutas

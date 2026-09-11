@@ -13,11 +13,11 @@ import {
 import { Input } from '@/componentes/ui/input'
 import { Label } from '@/componentes/ui/label'
 import { cn } from '@/lib/utils'
+import { cargarParametros, simboloSemaforo } from '@/lib/parametros'
 import {
   ESTADOS_UNIDAD,
   SEMAFORO_DATO,
   SEMAFOROS,
-  cargarParametros,
   guardarUnidad,
   unidadAFormulario,
   unidadEnBlanco,
@@ -232,7 +232,7 @@ export function FormularioUnidad({
               <option value="">— sin parámetro asignado —</option>
               {(parametros.data?.filas ?? []).map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.id} · {p.descripcion}
+                  {simboloSemaforo(p.estadoSemaforo)} {p.id} · {p.descripcion}
                 </option>
               ))}
             </select>

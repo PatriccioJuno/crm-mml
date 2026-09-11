@@ -6,6 +6,10 @@ import { PantallaEntrar } from '@/paginas/entrar/PantallaEntrar'
 import { PantallaHoy } from '@/paginas/hoy'
 import { PantallaInventario } from '@/paginas/inventario'
 import { PantallaRegistroRapido } from '@/paginas/registro-rapido'
+import { PantallaSeparaciones } from '@/paginas/separaciones'
+import { Constancia } from '@/paginas/separaciones/Constancia'
+import { FichaSeparacion } from '@/paginas/separaciones/FichaSeparacion'
+import { FormularioSeparacion } from '@/paginas/separaciones/FormularioSeparacion'
 import { RutaProtegida } from '@/auth/RutaProtegida'
 import { SECCIONES, type ClaveSeccion } from '@/auth/secciones'
 
@@ -16,9 +20,10 @@ import { SECCIONES, type ClaveSeccion } from '@/auth/secciones'
  * para que el menu lateral y el enrutador no puedan desincronizarse: si una
  * seccion existe en el menu, existe como ruta, y con el mismo filtro de rol.
  *
- * Escritas: `hoy`, `registro-rapido`, `embudo` e `inventario`. Las demas siguen
- * resolviendo al marcador de posicion; cada una tiene ya su carpeta en
- * src/paginas/ y al implementarla se anade a `ESCRITAS`, sin tocar nada mas.
+ * Escritas: `hoy`, `registro-rapido`, `embudo`, `inventario` y `separaciones`.
+ * Las demas siguen resolviendo al marcador de posicion; cada una tiene ya su
+ * carpeta en src/paginas/ y al implementarla se anade a `ESCRITAS`, sin tocar
+ * nada mas.
  *
  * Fuente de la lista: 01-documentacion\02-ESPECIFICACION-TECNICA.md §4.
  */
@@ -27,6 +32,7 @@ const ESCRITAS: Partial<Record<ClaveSeccion, JSX.Element>> = {
   'registro-rapido': <PantallaRegistroRapido />,
   embudo: <PantallaEmbudo />,
   inventario: <PantallaInventario />,
+  separaciones: <PantallaSeparaciones />,
 }
 
 const pantallas: RouteObject[] = SECCIONES.map((seccion) => ({
@@ -45,6 +51,20 @@ export const rutas: RouteObject[] = [
   // Supabase. La ruta existe solo para que quien llegue a ella (un enlace
   // viejo, una costumbre de otro sistema) acabe donde tiene que acabar.
   { path: '/registro/*', element: <Navigate to="/entrar" replace /> },
+
+  // La constancia va FUERA del cascaron, y es a proposito: lo que se imprime
+  // es la hoja, no el CRM. Dentro del cascaron, la barra lateral azul saldria
+  // en el papel. Sigue detras de la sesion y del mismo filtro de seccion; lo
+  // que decide si el documento llega a dibujarse es `puede_emitir_constancia`,
+  // a la que la propia pantalla vuelve a preguntar (R3).
+  {
+    path: '/separaciones/:separacionId/constancia',
+    element: (
+      <RutaProtegida seccion="separaciones">
+        <Constancia />
+      </RutaProtegida>
+    ),
+  },
 
   {
     path: '/',
@@ -68,6 +88,29 @@ export const rutas: RouteObject[] = [
       { path: 'rapido', element: <Navigate to="/registro-rapido" replace /> },
 
       ...pantallas,
+
+      // Las dos pantallas de dentro de Separaciones. Van sueltas y no en
+      // SECCIONES porque no son secciones del menu: son el alta y la ficha de
+      // una separacion concreta. El filtro de rol es el mismo de la seccion
+      // (`sep_leer`, los cinco roles); quien puede REGISTRAR y quien puede
+      // VERIFICAR lo deciden `sep_crear` y fn_verificacion_solo_direccion en
+      // la base, no el enrutador.
+      {
+        path: 'separaciones/nueva',
+        element: (
+          <RutaProtegida seccion="separaciones">
+            <FormularioSeparacion />
+          </RutaProtegida>
+        ),
+      },
+      {
+        path: 'separaciones/:separacionId',
+        element: (
+          <RutaProtegida seccion="separaciones">
+            <FichaSeparacion />
+          </RutaProtegida>
+        ),
+      },
 
       // La ficha de persona: destino del boton «abrir ficha» de cada fila de
       // Hoy. La pantalla todavia no esta escrita — la ruta existe para que el

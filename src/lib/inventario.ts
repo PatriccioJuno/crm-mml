@@ -302,46 +302,49 @@ export async function cargarUnidades(): Promise<Lote<Unidad>> {
 }
 
 // ---------------------------------------------------------------------------
-// Parametros — el desplegable del precio
+// Unidades ofrecibles — el selector de la pantalla de separaciones
 // ---------------------------------------------------------------------------
 
-export type ParametroBreve = {
+export type UnidadOfrecible = {
   id: string
-  descripcion: string
-  estadoSemaforo: string
-  fuente: string
+  codigoUnidad: string
+  tipo: string | null
+  areaM2: number | string | null
 }
 
-function interpretarParametro(fila: unknown): ParametroBreve | null {
+function interpretarOfrecible(fila: unknown): UnidadOfrecible | null {
   if (typeof fila !== 'object' || fila === null) return null
   const f = fila as Record<string, unknown>
 
   const id = texto(f['id'])
-  const descripcion = texto(f['descripcion'])
-  const estadoSemaforo = texto(f['estado_semaforo'])
-  const fuente = texto(f['fuente'])
-  if (id === null || descripcion === null || estadoSemaforo === null || fuente === null) {
-    return null
+  const codigoUnidad = texto(f['codigo_unidad'])
+  if (id === null || codigoUnidad === null) return null
+
+  return {
+    id,
+    codigoUnidad,
+    tipo: texto(f['tipo']),
+    areaM2: monto(f['area_m2']),
   }
-  return { id, descripcion, estadoSemaforo, fuente }
 }
 
 /**
- * Los parametros, para elegir a cual apunta el precio de la unidad.
+ * Las unidades que se pueden ofrecer, leidas de `v_unidades_ofrecibles`.
  *
- * No se filtran por `id like 'precio%'`: eso seria inventar una convencion de
- * nombres que nadie ha escrito. Se listan todos con su descripcion y su
- * semaforo, y elige la persona. Politica que lo permite: `parametros_leer`
- * (02-rls.sql) — todos leen, solo direccion escribe.
+ * Se consulta LA VISTA, no la tabla con un filtro: es la unica definicion de
+ * «que se puede ofrecer» (Acta 03-O02) y reconstruirla aqui con un par de
+ * `.eq()` seria tener dos criterios que un dia van a discrepar. Lo que esta
+ * lista devuelve es lo unico que el formulario de separacion puede ofrecer.
  */
-export async function cargarParametros(): Promise<Lote<ParametroBreve>> {
+export async function cargarUnidadesOfrecibles(): Promise<Lote<UnidadOfrecible>> {
   const { data, error } = await supabase
-    .from('parametros')
-    .select('id, descripcion, estado_semaforo, fuente')
-    .order('id', { ascending: true })
+    .from('v_unidades_ofrecibles')
+    .select('id, codigo_unidad, tipo, area_m2')
+    .order('codigo_unidad', { ascending: true })
+    .limit(LIMITE_UNIDADES)
 
   if (error !== null) throw new Error(mensajeDeError(error.message))
-  return leerLote(data, interpretarParametro)
+  return leerLote(data, interpretarOfrecible)
 }
 
 // ---------------------------------------------------------------------------
