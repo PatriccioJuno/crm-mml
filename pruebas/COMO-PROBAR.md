@@ -1,0 +1,214 @@
+# Cómo ejecutar las pruebas de las reglas duras
+
+**Estado:** 🟡 El archivo está escrito y su sintaxis validada; el resultado
+contra un proyecto real todavía no está anotado. Ver §7.
+**Qué se prueba:** `pruebas/reglas.sql`
+**Cuánto tarda:** menos de un minuto.
+
+---
+
+## 1. Para qué sirve esto
+
+`07-crm/CLAUDE.md` §4 dice que las nueve reglas de negocio **se implementan como
+restricciones de base de datos, no como validaciones de formulario** — porque un
+formulario se esquiva y una restricción no. Este archivo comprueba que eso es
+verdad: intenta romper cada regla a propósito y anota si la base lo impidió.
+
+Es la prueba de que el esquema quedó bien instalado. Si una de estas pruebas
+falla, el CRM *parece* funcionar y en realidad no está protegiendo nada.
+
+**Lo que estas pruebas NO son:** la batería de RLS. Aquí solo se comprueba que
+todas las tablas tienen `rowsecurity = true`. Que las *políticas* dejen ver a
+cada rol exactamente lo que debe es otra cosa, y vive en
+`01-documentacion/05-SEGURIDAD-BACKUPS-Y-LEY-29733.md` §4. Una tabla puede tener
+RLS activado y una política `using (true)` que lo enseñe todo: esta prueba
+diría ✅ y la base seguiría abierta. **Hay que correr las dos.**
+
+---
+
+## 2. Antes de empezar
+
+1. Haber ejecutado, en este orden, los archivos de `02-codigo/sql/`:
+   `01-schema` → `02-rls` → `03-vistas` → `04-seed-parametros` → `06` → `07` →
+   `08` → `09`.
+   Sin `04-seed-parametros` falla ya la preparación: `separaciones.plazo_parametro`
+   referencia una fila de `parametros` que ese archivo siembra.
+
+2. **No hace falta un proyecto vacío.** Todo el archivo corre dentro de un
+   `begin … rollback`, así que al terminar la base queda exactamente como
+   estaba: ni una persona de prueba, ni una unidad, ni un parámetro tocado.
+
+   Aun así, la primera vez córrelo en un proyecto de prueba. No por lo que hace
+   —no deja rastro—, sino para que veas el resultado sin la presión de estar
+   apuntando a la base buena.
+
+---
+
+## 3. Ejecutarlo en el SQL Editor de Supabase
+
+1. Abre tu proyecto en [supabase.com](https://supabase.com) → **SQL Editor** →
+   **New query**.
+2. Abre `pruebas/reglas.sql`, cópialo **entero** y pégalo.
+3. Pulsa **Run** (o `Ctrl`+`Enter`).
+
+Se ejecuta de una sola vez. No hay que ir bloque por bloque: los errores que
+*deben* ocurrir se capturan por dentro y se anotan, en lugar de reventar el
+script.
+
+### Tres cosas que conviene saber del editor
+
+- **Solo enseña el último resultado.** Por eso el archivo termina en un único
+  `SELECT` que trae todas las filas y el resumen al final. Si partieras el
+  archivo, perderías los cuadros intermedios.
+- **Puede avisar de que ya hay una transacción abierta** al llegar al `begin;`.
+  Es un aviso, no un error: el editor ya envolvía la consulta. El `rollback`
+  del final sigue deshaciendo todo igual.
+- **⚠️ No borres el `rollback` de la última línea.** Es lo único que impide que
+  este archivo deje basura en la base — y, peor, que deje `parametros` con el
+  plazo de juguete que usa la prueba R4b. (Aun así, R4b devuelve el parámetro a
+  su valor original por su cuenta, incluso si algo falla a mitad: dos redes, no
+  una.)
+
+---
+
+## 4. Cómo se lee el resultado
+
+Sale un cuadro con una fila por prueba y esta última columna:
+
+| Veredicto | Qué significa | Qué hacer |
+|---|---|---|
+| ✅ PASA | La regla se comporta como debe | Nada |
+| 🔴 FALLA | La regla **no** protege lo que dice proteger | Arreglar antes de cargar datos reales |
+| 🔴 FALLA CONOCIDA | Defecto ya documentado, con decisión pendiente | Ver §6 |
+| 🟡 OMITIDA | No se pudo probar, y dice por qué | Ver §5 |
+| 🟡 REVISAR | Hallazgo que no es un agujero, pero conviene mirar | Leer la fila |
+
+La última fila es el **RESUMEN**, con el recuento de cada tipo.
+
+> **Un error esperado es una prueba superada.** Casi todas estas pruebas
+> intentan hacer algo prohibido; que la base lo impida es exactamente el
+> resultado bueno. Además de que falle, cada prueba comprueba que el mensaje
+> sea **el suyo**: una prueba que pasara porque saltó otro error distinto no
+> probaría nada, y por eso saldría 🔴.
+
+### Lo que debe salir cuando todo está bien
+
+- **0 filas 🔴 FALLA.**
+- **1 fila 🔴 FALLA CONOCIDA** — `R7b`, mientras no se arregle `v_cobranza` (§6).
+- Las 🟡 OMITIDA que correspondan a lo que aún no exista en tu proyecto (§5).
+- Todo lo demás en ✅.
+
+---
+
+## 5. Si una prueba no da el resultado esperado
+
+### 5.1 Sale 🟡 OMITIDA
+
+No es un fallo: es que faltan datos para poder probarla. La columna
+`obtenido` dice cuáles.
+
+| Prueba | Por qué se omite | Cómo hacer que corra |
+|---|---|---|
+| `R2b` | No hay ningún perfil activo con rol `comercial` | Crea el usuario en **Authentication → Users** y pon `update perfiles set rol='comercial' where id='…'` |
+| `R2c`, `R3b`, `R3c` | No hay ningún perfil activo con rol `direccion` | Igual, con `rol='direccion'` (es el de Walter) |
+| `R4a` | El parámetro `plazo_devolucion_separacion_dias` **ya tiene valor** | Es buena noticia: significa que se cargó desde 00-fuente-de-verdad. La prueba no vacía un parámetro de la fuente de verdad para forzar un error |
+| `R4c` | No se pudo crear la separación de prueba en R4b | Arregla primero R4b |
+| `R6b` | La tabla `perfiles` está vacía | Crea al menos un usuario |
+| `R8 · …` | Esa tabla está vacía | Normal en un proyecto recién instalado |
+
+**`R2c` es la que más importa.** Sin ella, R2 solo demuestra que el disparador
+bloquea a *todo el mundo* — no que distinga a Dirección del resto. Y esa
+distinción **es** el Acta 03-O02. Mientras R2c salga OMITIDA, R2 no está
+validada: no la des por buena.
+
+### 5.2 Sale 🔴 FALLA
+
+Compara `esperado` con `obtenido` en esa fila y busca aquí:
+
+| Regla | Qué la sostiene | Si falla, revisa |
+|---|---|---|
+| **R1a** | índice `unidad_una_sola_asignacion_activa` | `01-schema.sql`. Es **la** defensa contra la doble asignación: no cargues datos reales hasta arreglarlo |
+| **R1b** | índice `unidad_una_separacion_viva` | Ídem |
+| **R1c** | índice `unidad_un_contrato_vivo` | Ídem |
+| **R2a/b/c** | disparador `fn_verificacion_solo_direccion` | Que el disparador `t_separacion_verificacion` exista y que el perfil que suplantas tenga el rol que crees |
+| **R3a/b/c** | función `puede_emitir_constancia()` | Exige las **tres** cosas: verificada, estado `verificada` y `doc_cliente_registrado`. Si R3b da `true`, alguien relajó la función |
+| **R4a** | disparador `fn_calcular_limite_devolucion` | Debe lanzar excepción nombrando el parámetro que falta |
+| **R4b/R4c** | que sean **dos campos**, no uno derivado del otro | Si uno mueve al otro, alguien mezcló los relojes. Es un problema legal, no cosmético (R4) |
+| **R5a/b/d** | restricción `calificado_requiere_las_4_respuestas` | Que sea `CHECK` en la tabla, no una validación en el formulario |
+| **R5c** | la misma restricción, por el lado bueno | Si falla, la restricción es demasiado estricta y bloquea el flujo normal |
+| **R6a/b** | vista `v_sin_siguiente_paso` | `03-vistas.sql`. Si R6b falla, la vista no mira `tareas.completada_el` |
+| **R7a** | que toda vista con dinero lleve su moneda | `obtenido` nombra la vista y la columna culpables |
+| **R8 · …** | disparadores `t_no_delete_*` | Falta el disparador en **esa** tabla. El original solo probaba `personas`; por eso ahora se prueban las cinco |
+| **R9a/b** | disparador `fn_registrar_cambio_estado` | Sin él no hay trazabilidad, y el reporte de 7 partes se queda sin su parte 3 |
+| **R9c** | que el disparador sea `after update **of estado**` | Si falla, se dispara en cada `UPDATE` y el historial deja de ser evidencia de nada |
+| **RLS** | `02-rls.sql` §2 | `obtenido` nombra las tablas sin RLS. **Una tabla sin RLS con la clave `anon` publicada es una base de datos pública.** Arréglalo antes que nada |
+
+### 5.3 Falla la preparación y no sale ningún cuadro
+
+Si el error aparece antes del cuadro de resultados, el problema está en el
+montaje, no en una regla:
+
+- `relation "…" does not exist` → falta ejecutar alguno de los archivos de
+  `02-codigo/sql/` (§2).
+- `violates foreign key constraint "separaciones_plazo_parametro_fkey"` → falta
+  `04-seed-parametros.sql`.
+- `duplicate key … unidades_codigo_unidad_key` sobre `PRUEBA-U1` → quedó basura
+  de una ejecución anterior a la que se le quitó el `rollback`. Bórrala a mano
+  y vuelve a poner el `rollback`.
+
+---
+
+## 6. La falla conocida: `R7b`
+
+`v_cobranza` (03-vistas.sql §6) calcula `pagado` como `sum(pagos.monto)` **sin
+mirar `pagos.monto_moneda`**, y `saldo` como `cuota.monto − ese sum`. Si una
+cuota recibe pagos en dos monedas, el saldo es una resta entre monedas
+distintas: un número falso.
+
+La prueba lo pone en números con fichas de juguete: cuota de 10 PEN, un pago de
+3 PEN y otro de 7 USD. Lo que de verdad se debe son 7 PEN. **La vista dice 0**,
+es decir, dice que la cuota está saldada.
+
+- **El CRM no crea ese dato**: `registrarPago` (`src/lib/cobranza.ts`) rechaza un
+  pago cuya moneda no sea la de la cuota, y lo dice con ese motivo.
+- **La base sí lo permite**, y esta prueba lo demuestra. Se puede llegar ahí por
+  una importación, por el panel de Supabase o por cualquier otro cliente.
+- **Arreglarlo es una migración de la vista**, no un parche desde el navegador.
+  Queda como decisión pendiente.
+
+Cuando se arregle, `R7b` pasará sola a ✅ y habrá que borrar el párrafo de aviso
+que lleva encima en `reglas.sql`.
+
+---
+
+## 7. Anota aquí lo que salga
+
+Este archivo no declara VALIDADO nada que nadie haya visto pasar. Cuando lo
+ejecutes, rellena una fila:
+
+| Fecha | Quién | Proyecto | Pasan | Fallan | Conocidas | Omitidas | Notas |
+|---|---|---|---|---|---|---|---|
+| _(pendiente)_ | | | | | | | |
+
+Si alguna 🔴 FALLA aparece y se arregla, anota también **qué** se arregló: el
+siguiente que lea esto necesita saber si el ✅ de hoy es el de siempre o el de
+después de una corrección.
+
+---
+
+## 8. Qué queda fuera de estas pruebas
+
+Para que nadie las lea como más de lo que son:
+
+- **Las políticas de RLS.** Se comprueba que RLS está activado, no que cada rol
+  vea lo que debe. Eso es `01-documentacion/05-SEGURIDAD-BACKUPS-Y-LEY-29733.md` §4.
+- **R7 completo.** Se comprueba que toda vista con dinero lleva su moneda al
+  lado (`R7a`) y se demuestra el agujero de `v_cobranza` (`R7b`). No se
+  demuestra que *ninguna otra* vista sume monedas: eso, hoy, es lectura del SQL.
+- **Lo que hace la interfaz.** Que el CRM no escriba un precio literal, que
+  marque los pendientes, que no ofrezca la constancia cuando no toca — nada de
+  eso se prueba aquí. Estas pruebas son de la base, que es donde viven las
+  reglas.
+- **Los plazos reales.** `R4b` usa un plazo de juguete (3 días) solo para
+  comprobar que los dos relojes se mueven por separado. El plazo de verdad
+  sigue 🔴 en `parametros`, y esta prueba no lo carga ni lo sugiere.
