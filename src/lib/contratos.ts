@@ -39,6 +39,28 @@ import { ordenEstado } from '@/lib/embudo'
  */
 
 // ---------------------------------------------------------------------------
+// El parametro del que se PROPONE el precio
+// ---------------------------------------------------------------------------
+
+/**
+ * De donde sale la propuesta de precio del contrato.
+ *
+ * `precio_puesto_9m2` esta hoy en 🔴 rojo (04-seed-parametros.sql) y su
+ * fuente es 00-fuente-de-verdad\precios-vigentes.md, el archivo que documenta
+ * los 8 precios en conflicto. Mientras siga en rojo NO hay propuesta: el
+ * formulario enseña el marcador de pendiente y exige que la cifra la escriba
+ * una persona, con la constancia de `constanciaDePrecioManual`.
+ *
+ * Es un ID, no un precio. Aqui no hay ninguna cifra.
+ */
+export const PARAMETRO_PRECIO = 'precio_puesto_9m2'
+
+/** El de la moneda de control, que tambien sigue [PENDIENTE]. */
+export const PARAMETRO_MONEDA = 'moneda_de_control'
+
+export const PARAMETROS_DEL_CONTRATO = [PARAMETRO_PRECIO, PARAMETRO_MONEDA] as const
+
+// ---------------------------------------------------------------------------
 // De que oportunidades se puede sacar un contrato
 // ---------------------------------------------------------------------------
 

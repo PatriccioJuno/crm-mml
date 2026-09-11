@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { entero, leerLote, monto, texto, type Lote } from '@/lib/lectura'
 import { aNumero, esMoneda, type Moneda } from '@/lib/dinero'
-import { etiquetaEstado } from '@/lib/embudo'
+import { ESTADOS, etiquetaEstado } from '@/lib/embudo'
 
 /**
  * Reportes — lo que las vistas SQL ya calculan, y NADA MAS.
@@ -62,6 +62,42 @@ export async function cargarEmbudo(): Promise<Lote<FilaEmbudo>> {
       total: entero(f['total']) ?? 0,
     }
   })
+}
+
+/**
+ * Las 10 etapas, en su orden, incluidas las que la vista no devolvió.
+ *
+ * `v_embudo` agrupa con `count(*)`, y un grupo vacío no existe: una etapa por
+ * la que todavía no ha pasado nadie sencillamente NO viene en la respuesta. Si
+ * el gráfico dibujara solo lo que llega, el embudo aparecería sin los escalones
+ * vacíos y se leería como si esas etapas no existieran.
+ *
+ * Rellenar con 0 no es inventar un dato: es la lectura correcta de un
+ * `group by` — «ninguna oportunidad», no «no se sabe». Es el mismo criterio
+ * que ya usa `pivotarPorLanzamiento`.
+ *
+ * Un estado que la base devuelva y este cliente no conozca NO se descarta: se
+ * añade al final con su nombre crudo, para que se vea que el enum cambió.
+ */
+export function completarEmbudo(filas: readonly FilaEmbudo[]): FilaEmbudo[] {
+  const conocidas = ESTADOS.map((e) => {
+    const encontrada = filas.find((f) => f.estado === e.valor)
+    return (
+      encontrada ?? {
+        estado: e.valor,
+        etiqueta: e.etiqueta,
+        activas: 0,
+        ganadas: 0,
+        perdidas: 0,
+        total: 0,
+      }
+    )
+  })
+
+  const valores = ESTADOS.map((e) => e.valor) as readonly string[]
+  const desconocidas = filas.filter((f) => !valores.includes(f.estado))
+
+  return [...conocidas, ...desconocidas]
 }
 
 export type FilaLanzamiento = {

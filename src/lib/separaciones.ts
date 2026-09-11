@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { subirComprobante } from '@/lib/comprobantes'
 import { booleano, entero, leerLote, monto, texto, type Lote } from '@/lib/lectura'
 import type { Moneda } from '@/lib/dinero'
 
@@ -405,77 +406,14 @@ export async function verificarSeparacion(id: string): Promise<ResultadoAccion> 
 // Storage · el comprobante
 // ---------------------------------------------------------------------------
 
-export const BUCKET_COMPROBANTES = 'comprobantes'
-
 /**
- * Sube el voucher y devuelve la RUTA del objeto, no una URL.
- *
- * El bucket es privado (09-separaciones-storage.sql), asi que una URL publica
- * no existe y una firmada caduca. Lo que se guarda en
- * `separaciones.comprobante_url` es la ruta —lo unico estable—, y la URL para
- * mirarlo se pide en el momento con `urlFirmadaComprobante`.
- *
- * 🟡 La columna se llama `comprobante_url` y lo que guarda es una ruta. No se
- * renombra desde aqui: cambiar el nombre de una columna del esquema es una
- * migracion, y esta pantalla no la va a hacer de tapadillo. Queda anotado.
- *
- * El nombre del archivo no lleva el nombre de la persona ni su documento: solo
- * un identificador aleatorio. Un nombre de archivo viaja en registros y en
- * URLs firmadas, y no tiene por que llevar un dato personal encima.
+ * Vive en src/lib/comprobantes.ts desde que Cobranza necesito subir el
+ * comprobante de un pago al MISMO bucket con las MISMAS politicas. Se reexporta
+ * aqui para no romper a quien ya lo importaba de este archivo, y para que siga
+ * habiendo una sola forma de nombrar un archivo y de pedir una URL firmada.
  */
-export async function subirComprobante(archivo: File): Promise<
-  { ok: true; ruta: string } | { ok: false; motivo: string }
-> {
-  const extension = extensionDe(archivo.name)
-  const ahora = new Date()
-  const carpeta = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}`
-  const ruta = `${carpeta}/${crypto.randomUUID()}${extension}`
-
-  const { error } = await supabase.storage
-    .from(BUCKET_COMPROBANTES)
-    .upload(ruta, archivo, { contentType: archivo.type, upsert: false })
-
-  if (error !== null) {
-    return { ok: false, motivo: mensajeDeStorage(error.message) }
-  }
-  return { ok: true, ruta }
-}
-
-/** URL temporal para mirar un comprobante. Caduca: es un bucket privado. */
-export async function urlFirmadaComprobante(ruta: string): Promise<string | null> {
-  const { data, error } = await supabase.storage
-    .from(BUCKET_COMPROBANTES)
-    .createSignedUrl(ruta, 300)
-
-  if (error !== null) return null
-  return data.signedUrl
-}
-
-function extensionDe(nombre: string): string {
-  const punto = nombre.lastIndexOf('.')
-  if (punto <= 0) return ''
-  const extension = nombre.slice(punto).toLowerCase()
-  return /^\.[a-z0-9]{1,5}$/.test(extension) ? extension : ''
-}
-
-function mensajeDeStorage(mensaje: string): string {
-  if (mensaje.includes('Bucket not found')) {
-    return (
-      'Falta ejecutar 02-codigo\\sql\\09-separaciones-storage.sql en Supabase: el bucket ' +
-      '«comprobantes» no existe todavía.'
-    )
-  }
-  if (mensaje.includes('exceeded the maximum allowed size')) {
-    return 'El archivo pesa más de 10 MB. Sube una foto más ligera o el PDF del banco.'
-  }
-  if (mensaje.includes('mime type') || mensaje.includes('not supported')) {
-    return 'Ese tipo de archivo no se admite. Sube una imagen (JPG, PNG, WEBP, HEIC) o un PDF.'
-  }
-  if (mensaje.includes('row-level security') || mensaje.includes('Unauthorized')) {
-    return 'Tu rol no puede subir comprobantes (política comprobantes_subir). Habla con Walter.'
-  }
-  return `No se pudo subir el comprobante: ${mensaje}`
-}
+export { BUCKET_COMPROBANTES, urlFirmadaComprobante } from '@/lib/comprobantes'
+export { subirComprobante }
 
 // ---------------------------------------------------------------------------
 // Alta

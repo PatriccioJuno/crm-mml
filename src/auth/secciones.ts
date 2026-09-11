@@ -3,6 +3,7 @@ import {
   BarChart3,
   Boxes,
   FileCheck2,
+  FileSignature,
   LayoutList,
   Sun,
   UserPlus,
@@ -12,7 +13,16 @@ import {
 import { ROLES, type Rol } from '@/auth/tipos-sesion'
 
 /**
- * Las ocho secciones del MVP-1 y que roles las ven en el menu.
+ * Las secciones del menu y que roles las ven.
+ *
+ * 🟡 SON NUEVE, Y LA ESPECIFICACION DICE OCHO.
+ * `01-documentacion\02-ESPECIFICACION-TECNICA.md` §4 enumera ocho pantallas
+ * para el MVP-1; `contratos` es la novena, pedida al implementar el alta de
+ * contratos y su calendario de cuotas. No se ha metido dentro de otra pantalla
+ * para disimular el desajuste: queda a la vista, y la especificacion hay que
+ * actualizarla. La tabla `contratos` y sus politicas ya existen desde
+ * 01-schema.sql y 02-rls.sql, asi que lo que falta es el documento, no el
+ * permiso.
  *
  * ###########################################################################
  * #  ESTO NO ES SEGURIDAD. ES COMODIDAD.                                    #
@@ -41,6 +51,7 @@ export type ClaveSeccion =
   | 'registro-rapido'
   | 'inventario'
   | 'separaciones'
+  | 'contratos'
   | 'cobranza'
   | 'reportes'
 
@@ -117,6 +128,18 @@ export const SECCIONES: readonly Seccion[] = [
     // disparador fn_verificacion_solo_direccion, no este archivo.
     rolesQueVen: TODOS,
     fuente: '02-rls.sql · sep_leer',
+  },
+  {
+    clave: 'contratos',
+    ruta: '/contratos',
+    etiqueta: 'Contratos',
+    Icono: FileSignature,
+    // Todos los LEEN (`contratos_leer` es `using (true)`). Quien puede crear
+    // uno lo decide `contratos_escribir` —dirección y administración—, y eso
+    // se comprueba en la pantalla para no dibujar un botón que va a fallar,
+    // no aquí: esta tabla es sobre qué se ve en el menú.
+    rolesQueVen: TODOS,
+    fuente: '02-rls.sql · contratos_leer + cuotas_leer',
   },
   {
     clave: 'cobranza',

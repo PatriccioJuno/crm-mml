@@ -79,7 +79,21 @@ export const TRAMOS = [
   },
 ] as const
 
-export type Tramo = (typeof TRAMOS)[number]
+/**
+ * El tipo es MAS ANCHO que `TRAMOS` a proposito.
+ *
+ * Si fuera `(typeof TRAMOS)[number]`, un tramo que la vista devolviera y este
+ * cliente no conociera no se podria ni representar — habria que forzarlo con
+ * un `as` que finge que es uno de los cuatro. Y eso es justo lo que no se
+ * quiere: que un valor nuevo del SQL se disfrace de «por vencer».
+ */
+export type Tramo = {
+  valor: string
+  etiqueta: string
+  orden: number
+  variante: 'default' | 'secondary' | 'destructive' | 'outline'
+  peso: string
+}
 
 export function leerTramo(valor: string): Tramo {
   const encontrado = TRAMOS.find((t) => t.valor === valor)
@@ -92,7 +106,7 @@ export function leerTramo(valor: string): Tramo {
     orden: 99,
     variante: 'outline',
     peso: 'font-normal',
-  } as Tramo
+  }
 }
 
 /** Enum `estado_cuota` de 01-schema.sql §0. */
@@ -361,6 +375,16 @@ export async function buscarCuotaParaPago(
 }
 
 export const MEDIOS_DE_PAGO = ['transferencia', 'depósito', 'yape', 'efectivo'] as const
+
+/**
+ * Carpeta del bucket `comprobantes` donde van los vouchers de PAGO.
+ *
+ * El bucket es el mismo que el de las separaciones (09-separaciones-storage.sql):
+ * mismas politicas, mismo caracter privado, misma prohibicion de borrar. Lo
+ * unico que cambia es el prefijo, para poder distinguir de un vistazo en el
+ * panel el voucher de un deposito de separacion del de una cuota.
+ */
+export const PREFIJO_COMPROBANTES_PAGO = 'pagos'
 
 export type DatosPago = {
   monto: string
