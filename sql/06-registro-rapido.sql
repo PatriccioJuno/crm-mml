@@ -1,6 +1,6 @@
 -- =====================================================================
 -- CRM Mercado Media Luna — 06 · REGISTRO RÁPIDO (transacción única)
--- Estado: 🟢 VIGENTE · 10/09/2026
+-- Estado: 🟢 VIGENTE · 14/09/2026 (corregida la ambiguedad de persona_id / oportunidad_id)
 --
 -- Orden de ejecución: 01-schema → 02-rls → 03-vistas → 04-seed-parametros → 06
 --
@@ -145,12 +145,17 @@ begin
   -- dos oportunidades vivas para el mismo prospecto hacen que el embudo
   -- cuente dos veces a una sola persona.
   -- ---------------------------------------------------------------
-  select id into v_oport
-  from oportunidades
-  where persona_id = v_persona
-    and situacion  = 'activa'
-    and archivado_el is null
-  order by fecha_ingreso desc
+  -- El alias `o.` NO es cosmetico. `persona_id` es tambien una columna de
+  -- salida del RETURNS TABLE de arriba, asi que existe como variable dentro de
+  -- esta funcion. Sin calificar, PL/pgSQL no sabe si te refieres a la columna o
+  -- a la variable y aborta con «column reference "persona_id" is ambiguous».
+  -- Corregido el 14/09/2026, la primera vez que la funcion se ejecuto de verdad.
+  select o.id into v_oport
+  from oportunidades o
+  where o.persona_id = v_persona
+    and o.situacion  = 'activa'
+    and o.archivado_el is null
+  order by o.fecha_ingreso desc
   limit 1;
 
   if v_oport is not null then
@@ -187,11 +192,12 @@ begin
 
   -- Si la oportunidad ya venía con una tarea abierta, no se apila otra:
   -- duplicar recordatorios es la forma más rápida de que se dejen de mirar.
-  select id into v_tarea
-  from tareas
-  where oportunidad_id = v_oport
-    and completada_el is null
-  order by vence_el
+  -- Mismo caso que arriba: `oportunidad_id` tambien es columna de salida.
+  select t.id into v_tarea
+  from tareas t
+  where t.oportunidad_id = v_oport
+    and t.completada_el is null
+  order by t.vence_el
   limit 1;
 
   if v_tarea is null then
