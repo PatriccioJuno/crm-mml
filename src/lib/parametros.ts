@@ -190,3 +190,218 @@ export async function cargarParametrosPorId(
   }
   return mapa
 }
+
+
+// ===========================================================================
+// ESCRITURA — solo dirección
+// ===========================================================================
+/**
+ * Todo lo que sigue existe para la pantalla /parametros.
+ *
+ * Quien puede escribir lo decide la base, no este archivo: la política
+ * `parametros_escribir` de 02-rls.sql es
+ * `for all to authenticated using (es(array['direccion']))`. La interfaz
+ * esconde el botón de editar a los demás roles, pero eso es comodidad. Si
+ * alguien llamara a `guardarParametro` desde la consola del navegador con otro
+ * rol, PostgREST devolvería CERO filas sin error — y abajo eso se convierte en
+ * un mensaje explícito, nunca en un «guardado» que no ocurrió.
+ */
+
+/** Los cinco estados del enum `semaforo` (01-schema.sql línea 49). */
+export const SEMAFOROS_PARAMETRO = [
+  {
+    valor: 'verde',
+    etiqueta: 'Confirmado',
+    ayuda: 'Hay acta o documento que lo respalda. El CRM puede afirmar y cotizar esta cifra.',
+  },
+  {
+    valor: 'amarillo',
+    etiqueta: 'Por validar',
+    ayuda: 'Indicio con procedencia. Se puede proponer, siempre mostrando que no está cerrado.',
+  },
+  {
+    valor: 'azul',
+    etiqueta: 'Propuesta',
+    ayuda: 'Alguien lo propuso y Dirección todavía no lo ha ratificado.',
+  },
+  {
+    valor: 'rojo',
+    etiqueta: 'Sin resolver',
+    ayuda: 'No hay valor utilizable. Las pantallas mostrarán PENDIENTE en su lugar.',
+  },
+  {
+    valor: 'negro',
+    etiqueta: 'Histórico',
+    ayuda: 'Reemplazado por otro. Se conserva para poder auditar, no se usa.',
+  },
+] as const
+
+export type EstadoSemaforo = (typeof SEMAFOROS_PARAMETRO)[number]['valor']
+
+/** El enum `moneda` de 01-schema.sql línea 68. No hay una tercera. */
+export const MONEDAS = ['PEN', 'USD'] as const
+
+export type CampoParametro =
+  | 'descripcion'
+  | 'valor'
+  | 'valorNumerico'
+  | 'valorEntero'
+  | 'fuente'
+
+/** El formulario trabaja en cadenas; la conversión ocurre al guardar. */
+export type DatosParametro = {
+  descripcion: string
+  valorTexto: string
+  valorNumerico: string
+  valorMoneda: string
+  valorEntero: string
+  unidad: string
+  fuente: string
+  estadoSemaforo: EstadoSemaforo
+  nota: string
+}
+
+export type ResultadoGuardado =
+  | { ok: true; id: string }
+  | { ok: false; motivo: string; campo?: CampoParametro }
+
+function esSemaforo(valor: string): valor is EstadoSemaforo {
+  return SEMAFOROS_PARAMETRO.some((s) => s.valor === valor)
+}
+
+export function parametroAFormulario(p: Parametro): DatosParametro {
+  return {
+    descripcion: p.descripcion,
+    valorTexto: p.valorTexto ?? '',
+    valorNumerico: p.valorNumerico === null ? '' : String(p.valorNumerico),
+    valorMoneda: p.valorMoneda ?? '',
+    valorEntero: p.valorEntero === null ? '' : String(p.valorEntero),
+    unidad: p.unidad ?? '',
+    fuente: p.fuente,
+    // Un semáforo que este cliente no conoce NO se degrada a verde ni se
+    // adivina: se muestra como rojo, que es el estado que no deja usar la
+    // cifra. Fallar cerrado, igual que interpretarPerfil.
+    estadoSemaforo: esSemaforo(p.estadoSemaforo) ? p.estadoSemaforo : 'rojo',
+    nota: p.nota ?? '',
+  }
+}
+
+/** ¿El formulario trae alguna cifra o texto en alguno de los cuatro huecos? */
+export function tieneValor(datos: DatosParametro): boolean {
+  return (
+    datos.valorTexto.trim() !== '' ||
+    datos.valorNumerico.trim() !== '' ||
+    datos.valorEntero.trim() !== ''
+  )
+}
+
+/** Cadena vacía -> null. Un campo en blanco es «no hay dato», no una cadena. */
+function oNulo(valor: string): string | null {
+  const limpio = valor.trim()
+  return limpio === '' ? null : limpio
+}
+
+/**
+ * Las reglas que este formulario hace cumplir, y de dónde sale cada una.
+ *
+ * 1 · `descripcion` y `fuente` son obligatorias porque la base las declara
+ *     `not null` (01-schema.sql, tabla `parametros`). Aquí solo se avisa antes
+ *     de gastar un viaje a la red; quien lo impide es la columna.
+ *
+ * 2 · 🟢 VERDE EXIGE UN VALOR. Esta regla NO la impone la base todavía: sale
+ *     de `sePuedeProponer` de este mismo archivo, que ya decía que un parámetro
+ *     verde con la columna vacía sigue sin ser un dato. Un formulario se
+ *     esquiva —el panel de Supabase, una importación— así que lo correcto sería
+ *     además una restricción `verde_exige_valor` en la tabla. Mientras no
+ *     exista, esto es un aviso honesto, no una garantía. Queda dicho.
+ */
+function validar(datos: DatosParametro): { motivo: string; campo: CampoParametro } | null {
+  if (datos.descripcion.trim() === '') {
+    return { motivo: 'La descripción es obligatoria.', campo: 'descripcion' }
+  }
+
+  if (datos.fuente.trim() === '') {
+    return {
+      motivo:
+        'Falta la fuente. Un número sin decir de dónde sale es exactamente el hueco rellenado ' +
+        'que produjo las cifras en conflicto de 00-fuente-de-verdad.',
+      campo: 'fuente',
+    }
+  }
+
+  const numerico = datos.valorNumerico.trim()
+  if (numerico !== '' && !Number.isFinite(Number(numerico))) {
+    return { motivo: 'El monto no es un número válido.', campo: 'valorNumerico' }
+  }
+
+  const entero = datos.valorEntero.trim()
+  if (entero !== '' && !Number.isInteger(Number(entero))) {
+    return { motivo: 'El entero tiene que ser un número sin decimales.', campo: 'valorEntero' }
+  }
+
+  if (datos.estadoSemaforo === 'verde' && !tieneValor(datos)) {
+    return {
+      motivo:
+        'No se puede confirmar un parámetro vacío. Un 🟢 sin cifra se lee como «ya está ' +
+        'decidido» y no lo está: cárgale el valor, o déjalo en 🔵 propuesta.',
+      campo: 'valor',
+    }
+  }
+
+  return null
+}
+
+/**
+ * Guarda un parámetro existente. No hay alta: los 16 parámetros nacen en
+ * 04-seed-parametros.sql, y crear uno nuevo desde la interfaz sin pasar por ese
+ * archivo dejaría la semilla mintiendo sobre lo que hay en la base.
+ */
+export async function guardarParametro(
+  datos: DatosParametro,
+  id: string,
+): Promise<ResultadoGuardado> {
+  const fallo = validar(datos)
+  if (fallo !== null) return { ok: false, motivo: fallo.motivo, campo: fallo.campo }
+
+  // Quién lo tocó. `actualizado_por` referencia `perfiles(id)`, que es el mismo
+  // uuid de auth.users. Se lee de la sesión local: no hace falta ir a la red.
+  const { data: sesion } = await supabase.auth.getSession()
+  const actor = sesion.session?.user.id ?? null
+
+  const fila = {
+    descripcion: datos.descripcion.trim(),
+    valor_texto: oNulo(datos.valorTexto),
+    // Los `numeric` se mandan como cadena, igual que llegan: convertirlos a
+    // `number` de camino a la base es redondear dinero por el camino.
+    valor_numerico: oNulo(datos.valorNumerico),
+    valor_moneda: oNulo(datos.valorMoneda),
+    valor_entero: oNulo(datos.valorEntero) === null ? null : Number(datos.valorEntero.trim()),
+    unidad: oNulo(datos.unidad),
+    fuente: datos.fuente.trim(),
+    estado_semaforo: datos.estadoSemaforo,
+    nota: oNulo(datos.nota),
+    actualizado_el: new Date().toISOString(),
+    actualizado_por: actor,
+  }
+
+  const { data, error } = await supabase
+    .from('parametros')
+    .update(fila)
+    .eq('id', id)
+    .select('id')
+
+  if (error !== null) return { ok: false, motivo: mensajeDeError(error.message) }
+
+  // RLS no da error cuando esconde una fila: devuelve cero. Sin esto, un
+  // `comercial` vería «guardado» y no se habría guardado nada.
+  if (!Array.isArray(data) || data.length === 0) {
+    return {
+      ok: false,
+      motivo:
+        'La base no guardó nada y tampoco devolvió un error: tu rol no puede escribir ' +
+        'parámetros. Solo Dirección puede (política parametros_escribir de RLS).',
+    }
+  }
+
+  return { ok: true, id }
+}

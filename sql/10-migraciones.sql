@@ -3,7 +3,7 @@
 -- Estado: 🟢 VIGENTE · 14/09/2026
 --
 -- Orden de ejecución: … → 08-vistas-embudo-e-inventario → 09-separaciones-storage
---                     → 10 (este archivo)
+--                     → 10 (este archivo, el último)
 --
 -- POR QUÉ EXISTE ESTE ARCHIVO
 -- El 14/09/2026 el CRM desplegado falló con 400 y 404 en Embudo, Inventario y
@@ -37,10 +37,11 @@ create table if not exists migraciones_aplicadas (
   -- Nombre del archivo tal cual vive en sql\, incluida la extensión.
   archivo        text primary key,
 
-  -- Cuándo se ejecutó de verdad. Es NULO a propósito para 01..04: esos ya
-  -- estaban aplicados cuando se creó esta tabla y su fecha original no quedó
-  -- registrada en ningún sitio. Inventar una fecha sería peor que admitir el
-  -- hueco — es la regla de 07-crm\CLAUDE.md §2 aplicada a los metadatos.
+  -- Cuándo se ejecutó. Puede quedar NULO: si esta tabla se crea sobre una base
+  -- que ya tenía scripts aplicados de antes, su fecha original no existe en
+  -- ningún sitio e inventarla sería peor que admitir el hueco — la regla de
+  -- 07-crm\CLAUDE.md §2 aplicada a los propios metadatos. En una instalación
+  -- limpia, en cambio, todos se aplican a la vez y la fecha sí se conoce.
   aplicado_el    timestamptz,
 
   -- Cuándo se comprobó contra la base que su efecto está presente.
@@ -50,7 +51,7 @@ create table if not exists migraciones_aplicadas (
 );
 
 comment on table migraciones_aplicadas is
-  'Que scripts de sql\ se han ejecutado contra ESTA base. aplicado_el es nulo cuando la fecha original no quedo registrada. 05-pruebas-reglas.sql no figura: es una bateria de pruebas, no una migracion.';
+  'Que scripts de sql\ se han ejecutado contra ESTA base. aplicado_el puede ser nulo si la tabla se creo sobre una base que ya tenia scripts de antes. 05-pruebas-reglas.sql no figura: es una bateria de pruebas, no una migracion.';
 
 -- ---------------------------------------------------------------------
 -- RLS — misma regla que el resto: `anon` no lee nada (02-rls.sql §0)
@@ -68,15 +69,24 @@ revoke all on migraciones_aplicadas from anon;
 grant select on migraciones_aplicadas to authenticated;
 
 -- ---------------------------------------------------------------------
--- Estado verificado contra la base el 14/09/2026
+-- Los nueve scripts que componen una instalación completa
+--
+-- `now()` es correcto porque este archivo es el ÚLTIMO de la secuencia: si se
+-- está ejecutando, los ocho anteriores acaban de correr en esta misma sesión.
+-- Si lo ejecutas suelto sobre una base que ya venía montada de antes, cambia
+-- los `now()` por `null` en los que no puedas fechar honestamente.
 -- ---------------------------------------------------------------------
 insert into migraciones_aplicadas (archivo, aplicado_el, nota) values
-  ('01-schema.sql',                     null,  '15 tablas, tipos y restricciones base'),
-  ('02-rls.sql',                        null,  'politicas RLS, mi_rol(), es(), disparador t_nuevo_usuario'),
-  ('03-vistas.sql',                     null,  '13 vistas de reportes'),
-  ('04-seed-parametros.sql',            null,  '16 filas en parametros'),
+  ('01-schema.sql',                     now(), '15 tablas, tipos y restricciones base'),
+  ('02-rls.sql',                        now(), 'politicas RLS, mi_rol(), es(), disparador t_nuevo_usuario'),
+  ('03-vistas.sql',                     now(), '13 vistas de reportes'),
+  ('04-seed-parametros.sql',            now(), '16 parametros con su fuente y su semaforo'),
   ('06-registro-rapido.sql',            now(), 'fn_registro_rapido() y origenes_admitidos()'),
-  ('07-vistas-hoy.sql',                 now(), 'anade persona_id y oportunidad_id, activa security_invoker'),
+  ('07-vistas-hoy.sql',                 now(), 'persona_id y oportunidad_id + security_invoker en las 2 vistas de Hoy'),
   ('08-vistas-embudo-e-inventario.sql', now(), 'v_embudo_tarjetas, v_unidades_tablero, constraint verde_exige_plano'),
   ('09-separaciones-storage.sql',       now(), 'bucket comprobantes y sus 2 politicas')
+on conflict (archivo) do nothing;
+
+insert into migraciones_aplicadas (archivo, aplicado_el, nota) values
+  ('10-migraciones.sql', now(), 'esta misma tabla')
 on conflict (archivo) do nothing;

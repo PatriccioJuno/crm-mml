@@ -8,6 +8,7 @@ import { PantallaEmbudo } from '@/paginas/embudo'
 import { PantallaEntrar } from '@/paginas/entrar/PantallaEntrar'
 import { PantallaHoy } from '@/paginas/hoy'
 import { PantallaInventario } from '@/paginas/inventario'
+import { PantallaParametros } from '@/paginas/parametros'
 import { PantallaRegistroRapido } from '@/paginas/registro-rapido'
 import { PantallaReportes } from '@/paginas/reportes'
 import { PantallaSeparaciones } from '@/paginas/separaciones'
@@ -25,9 +26,9 @@ import { SECCIONES, type ClaveSeccion } from '@/auth/secciones'
  * seccion existe en el menu, existe como ruta, y con el mismo filtro de rol.
  *
  * Escritas: `hoy`, `registro-rapido`, `embudo`, `inventario`, `separaciones`,
- * `contratos`, `cobranza` y `reportes`. La unica que sigue resolviendo al
- * marcador de posicion es `personas`; tiene ya su carpeta en src/paginas/ y al
- * implementarla se anade a `ESCRITAS`, sin tocar nada mas.
+ * `contratos`, `cobranza`, `reportes` y `parametros`. La unica que sigue
+ * resolviendo al marcador de posicion es `personas`; tiene ya su carpeta en
+ * src/paginas/ y al implementarla se anade a `ESCRITAS`, sin tocar nada mas.
  *
  * Fuente de la lista: 01-documentacion\02-ESPECIFICACION-TECNICA.md §4 — con
  * la salvedad de `contratos`, que es la novena seccion y todavia no esta en
@@ -42,6 +43,7 @@ const ESCRITAS: Partial<Record<ClaveSeccion, JSX.Element>> = {
   contratos: <PantallaContratos />,
   cobranza: <PantallaCobranza />,
   reportes: <PantallaReportes />,
+  parametros: <PantallaParametros />,
 }
 
 const pantallas: RouteObject[] = SECCIONES.map((seccion) => ({

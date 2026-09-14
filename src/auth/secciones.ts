@@ -5,6 +5,7 @@ import {
   FileCheck2,
   FileSignature,
   LayoutList,
+  SlidersHorizontal,
   Sun,
   UserPlus,
   Users,
@@ -15,7 +16,7 @@ import { ROLES, type Rol } from '@/auth/tipos-sesion'
 /**
  * Las secciones del menu y que roles las ven.
  *
- * 🟡 SON NUEVE, Y LA ESPECIFICACION DICE OCHO.
+ * 🟡 SON DIEZ, Y LA ESPECIFICACION DICE OCHO.
  * `01-documentacion\02-ESPECIFICACION-TECNICA.md` §4 enumera ocho pantallas
  * para el MVP-1; `contratos` es la novena, pedida al implementar el alta de
  * contratos y su calendario de cuotas. No se ha metido dentro de otra pantalla
@@ -23,6 +24,12 @@ import { ROLES, type Rol } from '@/auth/tipos-sesion'
  * actualizarla. La tabla `contratos` y sus politicas ya existen desde
  * 01-schema.sql y 02-rls.sql, asi que lo que falta es el documento, no el
  * permiso.
+ *
+ * `parametros` es la decima, anadida el 14/09/2026. Mismo caso: la politica
+ * `parametros_escribir` existia desde 02-rls.sql y daba permiso de escritura a
+ * direccion, pero no habia pantalla — asi que ratificar un parametro obligaba a
+ * escribir SQL a mano en el panel de Supabase. La base llevaba meses esperando
+ * esta seccion; lo que faltaba era la interfaz, no el permiso.
  *
  * ###########################################################################
  * #  ESTO NO ES SEGURIDAD. ES COMODIDAD.                                    #
@@ -54,6 +61,7 @@ export type ClaveSeccion =
   | 'contratos'
   | 'cobranza'
   | 'reportes'
+  | 'parametros'
 
 export type Seccion = {
   clave: ClaveSeccion
@@ -156,6 +164,18 @@ export const SECCIONES: readonly Seccion[] = [
     Icono: BarChart3,
     rolesQueVen: TODOS,
     fuente: '02-rls.sql · lectura de las tablas base a través de 03-vistas.sql',
+  },
+  {
+    clave: 'parametros',
+    ruta: '/parametros',
+    etiqueta: 'Parámetros',
+    Icono: SlidersHorizontal,
+    // Todos los LEEN: `parametros_leer` es `using (true)`, y tiene que serlo
+    // porque el CRM entero depende de estas cifras. Quien puede EDITARLOS lo
+    // decide `parametros_escribir` —solo dirección—, y eso lo comprueba la
+    // pantalla para no dibujar un botón que va a fallar, no esta tabla.
+    rolesQueVen: TODOS,
+    fuente: '02-rls.sql · parametros_leer',
   },
 ] as const
 
