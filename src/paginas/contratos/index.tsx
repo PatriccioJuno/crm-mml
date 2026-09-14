@@ -73,7 +73,7 @@ export function PantallaContratos() {
   const puedeEscribir = rol !== null && ESCRIBEN.includes(rol)
 
   return (
-    <div className="w-full px-6 py-8">
+    <div className="w-full">
       <header className="mb-4 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black tracking-tight text-foreground">Contratos</h1>
@@ -288,7 +288,7 @@ function DialogoCalendario({
 
   return (
     <Dialog open onOpenChange={(abierto) => !abierto && cerrar()}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>
             Calendario de {contrato.nombreCompleto ?? 'este contrato'}

@@ -67,7 +67,7 @@ export function BloqueHoy({
     >
       <CardHeader
         className={cn(
-          'flex-row items-start justify-between gap-4 space-y-0 py-4',
+          'flex-row items-start justify-between gap-4 space-y-0 px-4 py-4 sm:px-6',
           esAlerta && 'bg-alerta text-alerta-foreground',
           esAzul && 'bg-azul text-cal',
           tono === 'neutro' && 'border-b border-cal-200',
@@ -112,7 +112,7 @@ export function BloqueHoy({
 
       <CardContent className="p-0">
         {cargando && (
-          <p className="flex items-center gap-2 px-6 py-5 text-sm text-suelo-500">
+          <p className="flex items-center gap-2 px-4 py-5 sm:px-6 text-sm text-suelo-500">
             <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.75} aria-hidden="true" />
             Cargando…
           </p>
@@ -121,7 +121,7 @@ export function BloqueHoy({
         {!cargando && error !== null && (
           <p
             role="alert"
-            className="flex items-start gap-2 px-6 py-5 text-sm font-bold text-alerta"
+            className="flex items-start gap-2 px-4 py-5 sm:px-6 text-sm font-bold text-alerta"
           >
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2} aria-hidden="true" />
             {error}
@@ -129,7 +129,7 @@ export function BloqueHoy({
         )}
 
         {!cargando && error === null && conteo === 0 && (
-          <p className="px-6 py-5 text-sm text-suelo-500">{vacio}</p>
+          <p className="px-4 py-5 sm:px-6 text-sm text-suelo-500">{vacio}</p>
         )}
 
         {!cargando && error === null && conteo !== null && conteo > 0 && (
@@ -137,7 +137,7 @@ export function BloqueHoy({
         )}
 
         {descartadas > 0 && (
-          <p className="border-t border-cal-200 px-6 py-2 text-xs font-bold text-alerta">
+          <p className="border-t border-cal-200 px-4 py-2 sm:px-6 text-xs font-bold text-alerta">
             🔴 {descartadas}{' '}
             {descartadas === 1 ? 'fila no se pudo leer' : 'filas no se pudieron leer'} y no se
             están mostrando. Revisa el esquema antes de fiarte de este conteo.
@@ -159,7 +159,7 @@ export function FilaHoy({
   acciones: ReactNode
 }) {
   return (
-    <li className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-6 py-3">
+    <li className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3 sm:px-6">
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-bold text-foreground">{principal}</p>
         <div className="mt-0.5 text-xs text-suelo-700">{secundario}</div>

@@ -97,7 +97,7 @@ export function FormularioUnidad({
 
   return (
     <Dialog open onOpenChange={(abierto) => !abierto && cerrar()}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{esAlta ? 'Nueva unidad' : `Editar ${unidad.codigoUnidad}`}</DialogTitle>
           <DialogDescription>

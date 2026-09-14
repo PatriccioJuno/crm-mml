@@ -140,7 +140,7 @@ export function PantallaRegistroRapido() {
   const listo = nombre.trim() !== '' && telefono.trim() !== '' && consentimiento
 
   return (
-    <div className="mx-auto w-full max-w-xl px-6 py-8">
+    <div className="mx-auto w-full max-w-xl">
       <header className="mb-6">
         <h1 className="text-2xl font-black tracking-tight text-foreground">Registro rápido</h1>
         <p className="mt-1 text-sm text-suelo-700">
@@ -283,7 +283,7 @@ export function PantallaRegistroRapido() {
             Es el unico ambar de la pantalla, y va sobre azul: la regla dura de
             marca dice que el ambar nunca toca una superficie clara. Por eso el
             pie de la tarjeta es azul, en vez de poner un boton ambar sobre cal. */}
-        <div className="flex items-center justify-between gap-4 bg-azul px-6 py-4">
+        <div className="flex flex-col items-stretch gap-3 bg-azul px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6">
           <p className="text-xs leading-snug text-azul-300">
             Crea persona, oportunidad y tarea de primer contacto.
             <br />
@@ -294,7 +294,7 @@ export function PantallaRegistroRapido() {
             onClick={() => void guardar()}
             disabled={!listo || guardando}
             className={cn(
-              'h-11 shrink-0 px-6 text-base font-bold',
+              'h-11 w-full shrink-0 px-6 text-base font-bold sm:w-auto',
               'bg-ambar text-suelo hover:bg-ambar/90',
               'focus-visible:ring-2 focus-visible:ring-cal',
               'disabled:bg-azul-600 disabled:text-azul-300 disabled:opacity-100',

@@ -128,7 +128,7 @@ export function PantallaCobranza() {
   }
 
   return (
-    <div className="w-full px-6 py-8">
+    <div className="w-full">
       <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black tracking-tight text-foreground">Cobranza</h1>

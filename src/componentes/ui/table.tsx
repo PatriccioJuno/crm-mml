@@ -2,14 +2,33 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+/* ===========================================================================
+ * DESVIACION DELIBERADA DE shadcn/ui — 14/09/2026
+ * ---------------------------------------------------------------------------
+ * El `<Table>` original es `w-full` dentro de un contenedor con scroll. En una
+ * pantalla ancha se comporta bien; en un movil de 360 px, no: `w-full` obliga
+ * a la tabla a CABER, asi que las columnas se estrujan y cada celda parte el
+ * texto en una palabra por linea. El scroll horizontal nunca llega a
+ * aparecer, porque la tabla siempre «cabe».
+ *
+ * Por eso se anade `min-w-[44rem]` (704 px): por debajo de ese ancho la tabla
+ * deja de encogerse y empieza a desplazarse de lado, que es lo que un movil
+ * sabe hacer. En escritorio no cambia nada — ahi `w-full` es mayor que 44rem
+ * y manda `w-full`.
+ *
+ * No se pone con punto de corte (`md:`, `lg:`) a proposito: la regla no es
+ * «en movil», es «cuando no quepa», y eso tambien pasa con una ventana de
+ * escritorio a media pantalla.
+ * =========================================================================== */
+
 const Table = React.forwardRef<
   HTMLTableElement,
   React.HTMLAttributes<HTMLTableElement>
 >(({ className, ...props }, ref) => (
-  <div className="relative w-full overflow-auto">
+  <div className="relative w-full overflow-x-auto">
     <table
       ref={ref}
-      className={cn("w-full caption-bottom text-sm", className)}
+      className={cn("w-full min-w-[44rem] caption-bottom text-sm", className)}
       {...props}
     />
   </div>

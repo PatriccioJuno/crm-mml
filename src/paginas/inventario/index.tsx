@@ -78,7 +78,7 @@ export function PantallaInventario() {
   const elegida = unidades.find((u) => u.id === seleccionada) ?? null
 
   return (
-    <div className="w-full px-6 py-8">
+    <div className="w-full">
       <header className="mb-5 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black tracking-tight text-foreground">Inventario</h1>
@@ -121,7 +121,7 @@ export function PantallaInventario() {
 
       {consulta.error === null && !consulta.isPending && (
         <TooltipProvider delayDuration={150}>
-          <div className="overflow-hidden rounded-lg border border-cal-300 bg-card">
+          <div className="overflow-x-auto rounded-lg border border-cal-300 bg-card">
             <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">

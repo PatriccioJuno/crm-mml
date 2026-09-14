@@ -227,7 +227,7 @@ export function FormularioContrato() {
   // -------------------------------------------------------------------------
   if (creado !== null) {
     return (
-      <div className="mx-auto w-full max-w-3xl px-6 py-8">
+      <div className="mx-auto w-full max-w-3xl">
         <p className="mb-4 flex items-start gap-2 rounded-md border border-cal-300 bg-card p-4 text-sm">
           <CheckCircle2
             className="mt-0.5 h-4 w-4 shrink-0 text-suelo-700"
@@ -284,7 +284,7 @@ export function FormularioContrato() {
   const filas = oportunidades.data?.filas ?? []
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-6 py-8">
+    <div className="mx-auto w-full max-w-3xl">
       <Button variant="ghost" size="sm" className="mb-2 -ml-3" asChild>
         <Link to="/contratos">
           <ArrowLeft strokeWidth={1.75} aria-hidden="true" />

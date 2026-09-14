@@ -104,7 +104,7 @@ function HoyConPerfil({ perfil }: { perfil: Perfil }) {
   })
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-6 py-8">
+    <div className="mx-auto w-full max-w-4xl">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-black tracking-tight text-foreground">Hoy</h1>

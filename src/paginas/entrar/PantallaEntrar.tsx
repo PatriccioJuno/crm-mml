@@ -53,7 +53,7 @@ export function PantallaEntrar() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-azul px-6 py-12">
+    <div className="flex min-h-screen items-center justify-center bg-azul px-4 py-10 sm:px-6 sm:py-12">
       <div className="w-full max-w-sm">
         {/* ---- Logotipo ----
             TODO: cuando exista el isotipo (la luna creciente,

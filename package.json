@@ -8,7 +8,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "tipos": "supabase gen types typescript --project-id klqltduvtfqymchdsdob --schema public > src/lib/tipos.ts"
+    "tipos": "supabase gen types typescript --project-id nmqwibcxqkaifszzbloo --schema public > src/lib/tipos.ts"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.23",

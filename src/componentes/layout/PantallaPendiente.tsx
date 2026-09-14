@@ -9,7 +9,7 @@ import { Construction } from 'lucide-react'
  */
 export function PantallaPendiente({ nombre }: { nombre: string }) {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-3 p-10 text-center">
+    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 p-6 text-center">
       <Construction
         className="h-6 w-6 text-suelo-500"
         aria-hidden="true"

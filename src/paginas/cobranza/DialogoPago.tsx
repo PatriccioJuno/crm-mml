@@ -152,7 +152,7 @@ export function DialogoPago({
 
   return (
     <Dialog open onOpenChange={(abierto) => !abierto && cerrar()}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Registrar un pago</DialogTitle>
           <DialogDescription>

@@ -99,7 +99,7 @@ export function DialogoParametro({
 
   return (
     <Dialog open onOpenChange={(abierto) => !abierto && cerrar()}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="font-mono text-base">{parametro.id}</DialogTitle>
           <DialogDescription>{parametro.descripcion}</DialogDescription>

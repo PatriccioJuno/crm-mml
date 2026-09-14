@@ -148,7 +148,7 @@ export function FormularioSeparacion() {
 
   if (!puedeRegistrar) {
     return (
-      <div className="mx-auto w-full max-w-3xl px-6 py-8">
+      <div className="mx-auto w-full max-w-3xl">
         <Volver />
         <p className="mt-4 rounded-md border border-cal-300 bg-card p-4 text-sm">
           Tu rol (<span className="font-bold">{perfil.rol}</span>) no puede registrar
@@ -163,7 +163,7 @@ export function FormularioSeparacion() {
   const hayDeposito = datos.fechaDepositoEfectivo !== ''
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-6 py-8">
+    <div className="mx-auto w-full max-w-3xl">
       <Volver />
 
       <header className="mb-5 mt-3">

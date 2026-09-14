@@ -131,7 +131,7 @@ export function DialogoGestion({
 
   return (
     <Dialog open onOpenChange={(abierto) => !abierto && cerrar()}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Gestión de cobranza</DialogTitle>
           <DialogDescription>

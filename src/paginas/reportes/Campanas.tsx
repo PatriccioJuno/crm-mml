@@ -177,7 +177,7 @@ function GrupoDeMoneda({ moneda, campanas }: { moneda: string; campanas: readonl
         </div>
 
         {datos.length > 0 && (
-          <div className="px-6 pb-2">
+          <div className="px-4 pb-2 sm:px-6">
             <BarChart
               data={datos}
               index="campana"
@@ -196,7 +196,7 @@ function GrupoDeMoneda({ moneda, campanas }: { moneda: string; campanas: readonl
         )}
 
         {sinCosto > 0 && (
-          <p className="px-6 pb-4 text-xs font-bold leading-snug text-suelo-700">
+          <p className="px-4 pb-4 text-xs sm:px-6 font-bold leading-snug text-suelo-700">
             🟡 {sinCosto}{' '}
             {sinCosto === 1
               ? 'campaña no aparece en el gráfico porque no tiene costo por lead'

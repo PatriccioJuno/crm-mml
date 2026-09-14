@@ -357,7 +357,7 @@ function Linea({ etiqueta, children }: { etiqueta: string; children: React.React
 
 /** Lienzo. Fuera del cascarón: lo que se imprime es la hoja, no el CRM. */
 function Marco({ children }: { children: React.ReactNode }) {
-  return <div className="min-h-screen bg-background px-6 py-8 print:bg-white print:p-0">{children}</div>
+  return <div className="min-h-screen bg-background px-4 py-6 sm:px-6 sm:py-8 print:bg-white print:p-0">{children}</div>
 }
 
 /**

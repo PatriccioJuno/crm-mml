@@ -79,7 +79,7 @@ export function FichaSeparacion() {
 
   if (separacion.isPending) {
     return (
-      <div className="mx-auto w-full max-w-3xl px-6 py-8">
+      <div className="mx-auto w-full max-w-3xl">
         <Volver />
         <p className="flex items-center gap-2 py-10 text-sm text-suelo-500">
           <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.75} aria-hidden="true" />
@@ -91,7 +91,7 @@ export function FichaSeparacion() {
 
   if (separacion.error !== null) {
     return (
-      <div className="mx-auto w-full max-w-3xl px-6 py-8">
+      <div className="mx-auto w-full max-w-3xl">
         <Volver />
         <p
           role="alert"
@@ -108,7 +108,7 @@ export function FichaSeparacion() {
 
   if (s === null) {
     return (
-      <div className="mx-auto w-full max-w-3xl px-6 py-8">
+      <div className="mx-auto w-full max-w-3xl">
         <Volver />
         <p className="mt-4 rounded-md border border-cal-300 bg-card p-4 text-sm">
           No existe ninguna separación con ese identificador, o tu rol no puede leerla
@@ -119,7 +119,7 @@ export function FichaSeparacion() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-6 py-8">
+    <div className="mx-auto w-full max-w-3xl">
       <Volver />
 
       <header className="mb-5 mt-3">
