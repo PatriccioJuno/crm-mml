@@ -106,11 +106,32 @@ export function Cascaron() {
   }, [menuAbierto])
 
   return (
-    <div className="flex min-h-screen bg-background">
+    // ---- Áreas seguras del teléfono (muesca, isla dinámica, barra de gestos)
+    //
+    // Los `env(safe-area-inset-*)` se ponen AQUÍ, una sola vez, y no en cada
+    // franja azul. Al estar en la raíz, la tira que queda bajo la barra de
+    // estado se pinta de azul, que es lo que hay debajo tanto en móvil (la
+    // <CabeceraMovil>) como en escritorio (la <BarraLateral> y la cabecera de
+    // pantalla). Si esto fuera `bg-background`, en un iPhone instalado
+    // aparecería una banda color cal encima de la cabecera azul.
+    //
+    // Sólo valen si index.html lleva `viewport-fit=cover`. Y `min-h-dvh` no
+    // desborda porque Tailwind pone `box-sizing: border-box`: el relleno va
+    // por dentro de la altura, no se suma.
+    <div
+      className={cn(
+        'flex min-h-dvh bg-azul',
+        'pt-[env(safe-area-inset-top)]',
+        'pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]',
+      )}
+    >
       {/* ---- Escritorio (>= lg) ----
           `sticky` + `h-screen`: el menu sigue a la vista aunque la tabla de
           abajo tenga doscientas filas. */}
-      <div className="sticky top-0 hidden h-screen shrink-0 lg:flex">
+      {/* `top` y `h` descuentan el área segura: un elemento `sticky` se pega
+          al borde del viewport, no al del contenedor, así que con `top-0` la
+          barra se metería bajo la muesca en cuanto se hiciera scroll. */}
+      <div className="sticky top-[env(safe-area-inset-top)] hidden h-[calc(100dvh-env(safe-area-inset-top))] shrink-0 lg:flex">
         <BarraLateral />
       </div>
 
@@ -135,6 +156,11 @@ export function Cascaron() {
             aria-label="Menú de navegación"
             className={cn(
               'absolute inset-y-0 left-0 shadow-flotante outline-none',
+              // El cajón es `fixed`, así que NO hereda el relleno de áreas
+              // seguras de la raíz: se lo tiene que poner él. Sin esto, en un
+              // iPhone instalado el logotipo del menú sale bajo la muesca y el
+              // botón de salir bajo la barra de gestos.
+              'bg-azul pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)]',
               'animate-in slide-in-from-left duration-200 ease-out',
             )}
           >
@@ -144,11 +170,16 @@ export function Cascaron() {
       )}
 
       {/* ---- Columna de trabajo ----
-          `min-w-0`: ver el punto 1 de la cabecera de este archivo. */}
-      <div className="flex min-w-0 flex-1 flex-col">
+          `min-w-0`: ver el punto 1 de la cabecera de este archivo.
+          `bg-background`: el lienzo cal vive aquí, no en la raíz, porque la
+          raíz tiene que ser azul por las áreas seguras (ver arriba). */}
+      <div className="flex min-w-0 flex-1 flex-col bg-background">
         <CabeceraMovil alAbrir={() => setMenuAbierto(true)} />
 
-        <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 sm:py-8">
+        {/* El relleno inferior suma la barra de gestos del teléfono: sin él,
+            la última fila de una tabla queda debajo de ella y no se puede
+            tocar. */}
+        <main className="min-w-0 flex-1 px-4 py-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:px-6 sm:py-8 sm:pb-[calc(2rem+env(safe-area-inset-bottom))]">
           <Outlet />
         </main>
       </div>

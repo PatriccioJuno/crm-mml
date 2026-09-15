@@ -1,7 +1,10 @@
+import { useEffect, useState } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import { Analytics, type BeforeSendEvent } from '@vercel/analytics/react'
 import { ProveedorSesion } from '@/auth/ContextoSesion'
+import { AvisoEstado } from '@/componentes/marca/Instalacion'
+import { aplicarVersionNueva, registrarServiceWorker } from '@/lib/pwa'
 import { rutas } from '@/rutas'
 
 const enrutador = createBrowserRouter(rutas)
@@ -55,6 +58,16 @@ function sinIdentificadores(evento: BeforeSendEvent): BeforeSendEvent {
 }
 
 export function App() {
+  // Instalacion en el telefono: el service worker se registra una sola vez,
+  // aqui, y solo en produccion (ver src/lib/pwa.ts). Cuando aparece una
+  // version nueva no se recarga por las bravas —alguien puede estar a medio
+  // rellenar una separacion—: se avisa y decide la persona.
+  const [hayVersionNueva, setHayVersionNueva] = useState(false)
+
+  useEffect(() => {
+    registrarServiceWorker(() => setHayVersionNueva(true))
+  }, [])
+
   return (
     <QueryClientProvider client={clienteConsultas}>
       {/* La sesion envuelve al enrutador, no al reves: la pantalla de entrada
@@ -63,6 +76,10 @@ export function App() {
       <ProveedorSesion>
         <RouterProvider router={enrutador} />
       </ProveedorSesion>
+
+      {/* Sin conexion / version nueva. Fuera de <ProveedorSesion> a proposito:
+          quedarse sin red en la pantalla de entrada tambien hay que decirlo. */}
+      <AvisoEstado hayVersionNueva={hayVersionNueva} alActualizar={aplicarVersionNueva} />
 
       {/* Analitica de Vercel. Va fuera de <ProveedorSesion> a proposito: no
           necesita sesion y no debe depender de ella. */}

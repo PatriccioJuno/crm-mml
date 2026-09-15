@@ -156,3 +156,68 @@ políticas actuales los cinco roles pueden **leer** casi todo, así que hoy el m
 - La clave `anon` **solo es segura con RLS activado en todas las tablas.** Antes de cargar un
   dato real hay que pasar la batería de pruebas de
   `../../01-documentacion/05-SEGURIDAD-BACKUPS-Y-LEY-29733.md`.
+
+---
+
+## Instalar el CRM en el teléfono (PWA)
+
+El CRM se instala en Android y en iPhone/iPad desde el propio navegador: queda con su icono en
+la pantalla de inicio y se abre a pantalla completa, sin barra de direcciones.
+
+### Cómo se instala
+
+| | |
+|---|---|
+| **Android** (Chrome, Edge, Samsung Internet) | Aparece un botón **«Instalar la app»** al pie del menú lateral. También sale solo el aviso del navegador. |
+| **iPhone / iPad** | **Tiene que ser Safari.** Compartir → «Añadir a pantalla de inicio». El menú lateral trae el botón «Cómo instalarlo» con los pasos, porque Safari no permite que una web abra ese menú por su cuenta. |
+| **Windows y macOS** (Chrome, Edge) | El mismo botón **«Instalar la app»** del menú lateral, o el icono de instalar (⊕) que sale a la derecha de la barra de direcciones. Queda en el menú Inicio / Launchpad y se abre en su propia ventana, sin barra de direcciones. |
+| **macOS con Safari** | Safari 17 o superior: Archivo → «Añadir al Dock». |
+
+Desde Chrome de iPhone **no se puede**: esa opción no existe en iOS fuera de Safari.
+
+Dos campos del manifiesto son para el escritorio: `display_override` (si el navegador no
+entiende `standalone`, cae a `minimal-ui` en vez de abrirse como pestaña) y `launch_handler`
+con `navigate-existing` (pulsar el icono con el CRM ya abierto reutiliza esa ventana y la lleva
+a la sección pedida, en vez de abrir una segunda ventana con otra sesión).
+
+### 🔴 Regla dura: el service worker no guarda datos
+
+`public/sw.js` guarda **solo el cascarón** — HTML, JS, CSS e iconos. Nunca una respuesta de la
+base. Por dos motivos, los dos innegociables:
+
+1. **Una cifra cacheada es una cifra que miente.** Este CRM enseña precios, saldos y plazos
+   legales. Servir la respuesta de ayer con cara de estar al día es exactamente el fallo que
+   documenta `00-fuente-de-verdad` y que este repositorio existe para evitar.
+2. **Ley 29733.** Las respuestas traen DNI, teléfonos y correos de terceros. Guardarlas en
+   Cache Storage las deja escritas en el disco del teléfono, fuera de la sesión y sobreviviendo
+   al cierre de sesión. Ver `../../01-documentacion/05-SEGURIDAD-BACKUPS-Y-LEY-29733.md`.
+
+La regla se hace cumplir con una **lista de permitidos**, no de prohibidos: el service worker
+solo toca peticiones `GET` del **mismo origen**. Supabase vive en otro origen, así que queda
+fuera por construcción — no hay ninguna lista de exclusiones de la que alguien pueda olvidarse.
+
+**Consecuencia buscada:** sin conexión el CRM arranca, no puede consultar nada, y lo dice con
+un aviso al pie. No hay «modo sin conexión» y no debe haberlo.
+
+### Actualizaciones
+
+La navegación es **red primero**: con conexión siempre se sirve el CRM de hoy. Nadie se queda
+atrapado en la versión de hace tres meses. Cuando hay una versión nueva esperando, sale un
+aviso con un botón *Actualizar* — no se recarga sola, porque alguien puede estar a medio
+rellenar una separación.
+
+### Qué hace falta para que funcione
+
+| Pieza | Dónde |
+|---|---|
+| Manifiesto | `public/manifest.webmanifest` |
+| Iconos (192, 512, maskable, apple-touch) | `public/`, generados desde `04-media/marca/logo/` |
+| Metaetiquetas de iOS y áreas seguras | `index.html` + `src/componentes/layout/Cascaron.tsx` |
+| Service worker | `public/sw.js` |
+| Registro e instalación | `src/lib/pwa.ts` |
+| Reescritura SPA y cabeceras de caché | `vercel.json` |
+
+**🔴 HTTPS es obligatorio.** Sin certificado no hay instalación ni service worker; es requisito
+del navegador, no una opción. Vercel lo da hecho. `localhost` es la única excepción, para poder
+probarlo en desarrollo — y ojo, el service worker **solo se registra en producción**
+(`npm run build && npm run preview`), nunca en `npm run dev`.

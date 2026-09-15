@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 import { useSesion } from '@/auth/ContextoSesion'
 import { seccionesVisibles } from '@/auth/secciones'
 import { ETIQUETA_ROL } from '@/auth/tipos-sesion'
+import { BotonInstalar } from '@/componentes/marca/Instalacion'
 
 /**
  * Barra lateral. Es la superficie azul principal de la aplicacion: junto con
@@ -48,6 +49,31 @@ import { ETIQUETA_ROL } from '@/auth/tipos-sesion'
  * ---------------------------------------------------------------------------
  */
 
+/**
+ * El isotipo de marca: la luna creciente. Mismo trazado que los iconos de la
+ * aplicacion instalada (public/icono-*.png), para que el CRM abierto en el
+ * navegador y el instalado en el telefono se vean como lo mismo.
+ *
+ * Ambar sobre azul: permitido, y esta barra siempre es azul.
+ */
+function Isotipo() {
+  return (
+    <svg
+      viewBox="-118 -118 236 236"
+      className="h-[30px] w-[30px] shrink-0"
+      role="img"
+      aria-label="Mercado Media Luna"
+    >
+      <g transform="rotate(-45)">
+        <path
+          d="M 50.176 -86.5 A 100 100 0 1 0 50.176 86.5 A 88 88 0 1 1 50.176 -86.5 Z"
+          fill="#F2A93B"
+        />
+      </g>
+    </svg>
+  )
+}
+
 /** Iniciales para el avatar. Dos como maximo: «Ana Maria Lopez» -> «AL». */
 function iniciales(nombre: string): string {
   const partes = nombre.trim().split(/\s+/).filter(Boolean)
@@ -79,16 +105,14 @@ export function BarraLateral({ alCerrar }: { alCerrar?: () => void }) {
     // boton de salir quedarian debajo del borde, inalcanzables.
     <aside className="flex h-full w-[236px] shrink-0 flex-col overflow-y-auto bg-azul px-4 py-6 text-cal">
       {/* ---- Marca ----
-          TODO: cuando se integre el isotipo (la luna creciente,
-          D:\SCPCMO\07-crm\04-media\marca\logo\), sustituye al cuadro «ML»
-          manteniendo la misma caja de 30 px. */}
+          El isotipo va en linea y no como <img>: son 120 bytes de trazado, no
+          compensa una peticion mas, y asi hereda el color de marca en vez de
+          traerlo cocido. Fuente del trazado:
+          D:\SCPCMO\07-crm\04-media\marca\logo\MML-isotipo-ambar.svg
+          (el mismo que genera los iconos de public/). */}
       <div className="relative flex items-center gap-2.5 px-2">
-        <span
-          aria-hidden="true"
-          className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-sm bg-cal text-[0.8125rem] font-black text-azul"
-        >
-          ML
-        </span>
+        <Isotipo />
+
         <span className="min-w-0">
           <span className="block truncate text-sm font-black leading-tight text-cal">
             Media Luna
@@ -181,6 +205,10 @@ export function BarraLateral({ alCerrar }: { alCerrar?: () => void }) {
           <span>{saliendo ? 'Cerrando…' : 'Salir'}</span>
         </button>
       </div>
+
+      {/* Instalar el CRM en el telefono. Se esconde solo cuando ya esta
+          instalado o cuando el navegador no lo permite. */}
+      <BotonInstalar />
 
       {/* La nota al pie se calla en pantallas bajas: es un recordatorio, y en un
           movil compite por altura con el boton de salir, que si hace falta. */}

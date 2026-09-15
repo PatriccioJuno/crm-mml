@@ -30,7 +30,13 @@ export function CabeceraMovil({ alAbrir }: { alAbrir: () => void }) {
   return (
     <header
       className={cn(
-        'sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 bg-azul pl-1 pr-4 text-cal',
+        // `top` descuenta el área segura: `sticky` se pega al borde del
+        // viewport, no al del contenedor. Con `top-0`, al hacer scroll en un
+        // iPhone instalado esta franja acabaría debajo de la hora. La tira que
+        // queda por encima es el relleno azul de <Cascaron>, así que no se ve
+        // ninguna costura.
+        'sticky top-[env(safe-area-inset-top)] z-30 flex h-14 shrink-0 items-center gap-2',
+        'bg-azul pl-1 pr-4 text-cal',
         'lg:hidden',
       )}
     >

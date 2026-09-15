@@ -2,10 +2,47 @@
 <html lang="es-PE">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- `viewport-fit=cover` es lo que permite usar env(safe-area-inset-*).
+         Sin esto, en un iPhone con muesca la aplicación instalada deja franjas
+         blancas arriba y abajo en vez de llegar al borde. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="color-scheme" content="light" />
     <meta name="robots" content="noindex, nofollow" />
     <title>CRM · Mercado Media Luna</title>
+
+    <!-- ===================================================================
+         INSTALACIÓN EN EL TELÉFONO
+         ===================================================================
+         El manifiesto y los iconos viven en public/ y se sirven tal cual.
+         El service worker se registra desde src/lib/pwa.ts.
+
+         ⚠ Nada de esto funciona sin HTTPS. Es requisito del navegador, no
+         una opción: sin certificado no hay instalación ni service worker.
+         La única excepción es localhost, para poder probarlo. -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- Color de la barra de estado y de la barra de tareas. Azul Noche. -->
+    <meta name="theme-color" content="#0F2A44" />
+
+    <!-- Iconos. El .svg lo usan los navegadores de escritorio; el .png de
+         180 px es el que se lleva iOS a la pantalla de inicio. -->
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <!-- iOS no lee el manifiesto: estas tres etiquetas son su equivalente.
+         Sin ellas, «Añadir a pantalla de inicio» crea un acceso directo que
+         abre Safari con su barra de direcciones, en vez de una aplicación.
+
+         `black-translucent` hace que el contenido pase POR DEBAJO de la barra
+         de estado. Es lo que queremos —la cabecera azul llega hasta arriba—,
+         pero obliga a respetar env(safe-area-inset-top), que es justo lo que
+         hace el cascarón en src/componentes/layout/Cascaron.tsx. Si algún día
+         se quita ese relleno, la hora del teléfono se comerá el título. -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Media Luna" />
 
     <!-- Tipografía de marca: Archivo. Una sola familia, sin excepciones.
          900 Black (títulos) · 700 Bold (destacados) · 400 Regular (cuerpo). -->
