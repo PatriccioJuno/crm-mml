@@ -1,3 +1,4 @@
+import { CabeceraPantalla } from '@/componentes/marca/CabeceraPantalla'
 import { CalidadDelDato } from './CalidadDelDato'
 import { Campanas } from './Campanas'
 import { Conversiones } from './Conversiones'
@@ -44,14 +45,16 @@ import { InsumosSemanales } from './InsumosSemanales'
 export function PantallaReportes() {
   return (
     <div className="w-full">
-      <header className="mb-6">
-        <h1 className="text-2xl font-black tracking-tight text-foreground">Reportes</h1>
-        <p className="mt-1 max-w-3xl text-sm leading-snug text-suelo-700">
-          Todo lo de esta pantalla lo calcula una vista SQL de{' '}
-          <code>02-codigo\sql\03-vistas.sql</code>. Nada se calcula en el navegador: si una cifra
-          no está en una vista, aquí sale como hueco y se dice por qué.
-        </p>
-      </header>
+      <CabeceraPantalla
+        titulo="Reportes"
+        descripcion={
+          <span className="block max-w-3xl leading-snug">
+            Todo lo de esta pantalla lo calcula una vista SQL de{' '}
+            <code>02-codigo\sql\03-vistas.sql</code>. Nada se calcula en el navegador: si una
+            cifra no está en una vista, aquí sale como hueco y se dice por qué.
+          </span>
+        }
+      />
 
       <div className="space-y-10">
         <CalidadDelDato />

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { AlertTriangle, CalendarPlus, Download, Loader2, Plus } from 'lucide-react'
+import { CabeceraPantalla } from '@/componentes/marca/CabeceraPantalla'
 import { Badge } from '@/componentes/ui/badge'
 import { Button } from '@/componentes/ui/button'
 import {
@@ -74,37 +75,36 @@ export function PantallaContratos() {
 
   return (
     <div className="w-full">
-      <header className="mb-4 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black tracking-tight text-foreground">Contratos</h1>
-          <p className="mt-1 text-sm text-suelo-700">
-            Los socios que ya compraron. Cada contrato manda sobre una unidad, y solo sobre una.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={() => exportar(filas)}
-            disabled={filas.length === 0}
-          >
-            <Download strokeWidth={1.75} aria-hidden="true" />
-            Exportar CSV
-          </Button>
-
-          {puedeEscribir && (
-            <Button asChild>
-              <Link to="/contratos/nuevo">
-                <Plus strokeWidth={2} aria-hidden="true" />
-                Nuevo contrato
-              </Link>
+      <CabeceraPantalla
+        titulo="Contratos"
+        descripcion="Los socios que ya compraron. Cada contrato manda sobre una unidad, y solo sobre una."
+        acciones={
+          <>
+            <Button
+              variant="outlineCal"
+              onClick={() => exportar(filas)}
+              disabled={filas.length === 0}
+            >
+              <Download strokeWidth={1.75} aria-hidden="true" />
+              Exportar CSV
             </Button>
-          )}
-        </div>
-      </header>
+
+            {puedeEscribir && (
+              // `ambar` es legítimo aquí: la cabecera es azul. Ver el bloque
+              // de src/componentes/ui/button.tsx.
+              <Button asChild variant="ambar">
+                <Link to="/contratos/nuevo">
+                  <Plus strokeWidth={2} aria-hidden="true" />
+                  Nuevo contrato
+                </Link>
+              </Button>
+            )}
+          </>
+        }
+      />
 
       {sinCalendario > 0 && (
-        <p className="mb-4 flex items-start gap-2 rounded-md border border-cal-300 bg-card p-3 text-sm">
+        <p className="mb-4 flex items-start gap-2 rounded-md border border-border bg-card p-3 text-sm">
           <CalendarPlus
             className="mt-0.5 h-4 w-4 shrink-0 text-suelo-700"
             strokeWidth={1.75}
@@ -142,7 +142,7 @@ export function PantallaContratos() {
       )}
 
       {consulta.error === null && !consulta.isPending && (
-        <div className="overflow-x-auto rounded-lg border border-cal-300 bg-card">
+        <div className="overflow-x-auto rounded-lg border border-border bg-card">
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">

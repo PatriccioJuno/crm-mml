@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { AlertTriangle, Loader2, Lock, Pencil } from 'lucide-react'
+import { CabeceraPantalla } from '@/componentes/marca/CabeceraPantalla'
 import { Button } from '@/componentes/ui/button'
 import {
   Table,
@@ -78,16 +79,21 @@ export function PantallaParametros() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-black tracking-tight text-foreground">Parámetros</h1>
-        <p className="mt-1 max-w-3xl text-sm leading-relaxed text-suelo-700">
-          Ninguna cifra del negocio vive en el código: todas viven aquí, con su fuente y su
-          semáforo. Cambiar un número en esta tabla lo cambia en todo el CRM.
-        </p>
-      </div>
+      <CabeceraPantalla
+        titulo="Parámetros"
+        descripcion={
+          <span className="block max-w-3xl leading-relaxed">
+            Ninguna cifra del negocio vive en el código: todas viven aquí, con su fuente y su
+            semáforo. Cambiar un número en esta tabla lo cambia en todo el CRM.
+          </span>
+        }
+      />
 
+      {/* El filete de la izquierda es un ACENTO, no un contorno: va en azul
+          pleno. El token `border` (azul al 10 %) es para contornos de tarjeta,
+          y a 2 px de ancho no se veria. */}
       {!puedeEditar && (
-        <p className="flex items-start gap-2 rounded-md border-l-2 border-cal-300 bg-cal-200 px-4 py-3 text-sm leading-relaxed text-suelo-700">
+        <p className="flex items-start gap-2 rounded-md border-l-2 border-azul bg-cal-200 px-4 py-3 text-sm leading-relaxed text-suelo-700">
           <Lock className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden="true" />
           Puedes consultar los parámetros, pero solo Dirección los modifica. Es la misma regla que
           impide que un vendedor cambie un precio.

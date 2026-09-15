@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AlertTriangle, Loader2, X } from 'lucide-react'
+import { CabeceraPantalla } from '@/componentes/marca/CabeceraPantalla'
 import { Button } from '@/componentes/ui/button'
 import { cn } from '@/lib/utils'
 import type { Lote } from '@/lib/lectura'
@@ -134,13 +135,15 @@ export function PantallaEmbudo() {
 
   return (
     <div className="w-full">
-      <header className="mb-5">
-        <h1 className="text-2xl font-black tracking-tight text-foreground">Embudo</h1>
-        <p className="mt-1 text-sm text-suelo-700">
-          Solo oportunidades <span className="font-bold">activas</span>. Arrastra una tarjeta a
-          otra columna, o cambia su estado desde el desplegable de la propia tarjeta.
-        </p>
-      </header>
+      <CabeceraPantalla
+        titulo="Embudo"
+        descripcion={
+          <>
+            Solo oportunidades <span className="font-bold text-cal">activas</span>. Arrastra una
+            tarjeta a otra columna, o cambia su estado desde el desplegable de la propia tarjeta.
+          </>
+        }
+      />
 
       <div className="mb-4">
         <FiltrosEmbudo

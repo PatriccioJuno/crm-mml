@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { AlertTriangle, ArrowLeft, Loader2, Paperclip } from 'lucide-react'
+import { CabeceraPantalla, MigajaVolver } from '@/componentes/marca/CabeceraPantalla'
 import { Button } from '@/componentes/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/componentes/ui/card'
-import { Input } from '@/componentes/ui/input'
+import { Input, claseCampo } from '@/componentes/ui/input'
 import { Label } from '@/componentes/ui/label'
 import { cn } from '@/lib/utils'
 import { useSesion } from '@/auth/ContextoSesion'
@@ -150,7 +151,7 @@ export function FormularioSeparacion() {
     return (
       <div className="mx-auto w-full max-w-3xl">
         <Volver />
-        <p className="mt-4 rounded-md border border-cal-300 bg-card p-4 text-sm">
+        <p className="mt-4 rounded-md border border-border bg-card p-4 text-sm">
           Tu rol (<span className="font-bold">{perfil.rol}</span>) no puede registrar
           separaciones. La política <code>sep_crear</code> las reserva a dirección, comercial y
           administración.
@@ -163,15 +164,15 @@ export function FormularioSeparacion() {
   const hayDeposito = datos.fechaDepositoEfectivo !== ''
 
   return (
-    <div className="mx-auto w-full max-w-3xl">
-      <Volver />
+    <>
+      <CabeceraPantalla
+        ancho="formulario"
+        migaja={<MigajaVolver a="/separaciones">Separaciones</MigajaVolver>}
+        titulo="Nueva separación"
+        descripcion="Lo que se registre aquí es dinero recibido y dos plazos legales. Nada se rellena solo."
+      />
 
-      <header className="mb-5 mt-3">
-        <h1 className="text-2xl font-black tracking-tight text-foreground">Nueva separación</h1>
-        <p className="mt-1 text-sm text-suelo-700">
-          Lo que se registre aquí es dinero recibido y dos plazos legales. Nada se rellena solo.
-        </p>
-      </header>
+      <div className="mx-auto w-full max-w-3xl">
 
       <form
         onSubmit={(evento) => {
@@ -181,7 +182,7 @@ export function FormularioSeparacion() {
         className="space-y-5"
       >
         {/* ---- 1 · PERSONA Y OPORTUNIDAD ---- */}
-        <Card className="border-cal-300 shadow-sm">
+        <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Persona</CardTitle>
           </CardHeader>
@@ -192,7 +193,7 @@ export function FormularioSeparacion() {
                 id="oportunidad"
                 value={datos.oportunidadId}
                 onChange={(e) => elegirOportunidad(e.target.value)}
-                className={cn(claseSelect, error?.campo === 'oportunidadId' && 'border-alerta')}
+                className={cn(claseCampo, error?.campo === 'oportunidadId' && 'border-alerta')}
                 disabled={oportunidades.isPending}
               >
                 <option value="">— elige a quién separa —</option>
@@ -216,7 +217,7 @@ export function FormularioSeparacion() {
         </Card>
 
         {/* ---- 2 · UNIDAD ---- */}
-        <Card className="border-cal-300 shadow-sm">
+        <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Unidad</CardTitle>
           </CardHeader>
@@ -228,7 +229,7 @@ export function FormularioSeparacion() {
               id="unidad"
               value={datos.unidadId}
               onChange={(e) => cambiar('unidadId', e.target.value)}
-              className={claseSelect}
+              className={claseCampo}
               disabled={unidades.isPending}
             >
               <option value="">— sin unidad asignada todavía —</option>
@@ -263,7 +264,7 @@ export function FormularioSeparacion() {
         </Card>
 
         {/* ---- 3 · EL DINERO ---- */}
-        <Card className="border-cal-300 shadow-sm">
+        <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base">El depósito</CardTitle>
           </CardHeader>
@@ -291,7 +292,7 @@ export function FormularioSeparacion() {
                   id="moneda"
                   value={datos.montoMoneda}
                   onChange={(e) => cambiar('montoMoneda', e.target.value as Moneda | '')}
-                  className={cn(claseSelect, error?.campo === 'montoMoneda' && 'border-alerta')}
+                  className={cn(claseCampo, error?.campo === 'montoMoneda' && 'border-alerta')}
                 >
                   <option value="">— elige —</option>
                   {MONEDAS.map((m) => (
@@ -442,9 +443,9 @@ export function FormularioSeparacion() {
         </section>
 
         {/* ---- 5 · DOCUMENTO DEL CLIENTE ---- */}
-        <Card className="border-cal-300 shadow-sm">
+        <Card>
           <CardContent className="space-y-3 pt-5">
-            <div className="flex items-start gap-3 rounded-md border border-cal-300 p-3">
+            <div className="flex items-start gap-3 rounded-md border border-border p-3">
               <input
                 id="doc-cliente"
                 type="checkbox"
@@ -468,7 +469,7 @@ export function FormularioSeparacion() {
                 value={datos.notas}
                 onChange={(e) => cambiar('notas', e.target.value)}
                 rows={2}
-                className={cn(claseSelect, 'h-auto py-2')}
+                className={cn(claseCampo, 'h-auto py-2')}
               />
             </div>
           </CardContent>
@@ -512,7 +513,8 @@ export function FormularioSeparacion() {
           </Button>
         </div>
       </form>
-    </div>
+      </div>
+    </>
   )
 }
 
@@ -575,10 +577,3 @@ function Volver() {
 function esMonedaConocida(valor: string | null | undefined): valor is Moneda {
   return typeof valor === 'string' && (MONEDAS as readonly string[]).includes(valor)
 }
-
-const claseSelect = cn(
-  'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1',
-  'text-sm shadow-sm transition-colors',
-  'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
-  'disabled:cursor-not-allowed disabled:opacity-50',
-)

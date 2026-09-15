@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { AlertTriangle, Copy, Loader2 } from 'lucide-react'
+import { claseCampo } from '@/componentes/ui/input'
 import { Button } from '@/componentes/ui/button'
 import {
   Dialog,
@@ -145,7 +146,7 @@ export function DialogoGestion({
             <Label htmlFor="mensaje">Mensaje para copiar y pegar</Label>
             <p
               id="mensaje"
-              className="rounded-md border border-cal-300 bg-cal p-3 text-sm leading-snug text-suelo-700"
+              className="rounded-md border border-border bg-cal p-3 text-sm leading-snug text-suelo-700"
             >
               {texto}
             </p>
@@ -169,7 +170,7 @@ export function DialogoGestion({
             </p>
           </div>
 
-          <hr className="border-cal-200" />
+          <hr className="border-tinta-fila" />
 
           <div className="space-y-2">
             <Label htmlFor="canal">Canal de la gestión</Label>
@@ -177,7 +178,7 @@ export function DialogoGestion({
               id="canal"
               value={canal}
               onChange={(e) => setCanal(e.target.value as CanalGestion)}
-              className={claseSelect}
+              className={claseCampo}
             >
               {CANALES_GESTION.map((c) => (
                 <option key={c.valor} value={c.valor}>
@@ -195,7 +196,7 @@ export function DialogoGestion({
               onChange={(e) => setResumen(e.target.value)}
               rows={2}
               placeholder="Se le escribió, quedó en pagar el viernes…"
-              className={cn(claseSelect, 'h-auto py-2')}
+              className={cn(claseCampo, 'h-auto py-2')}
             />
             <p className="text-xs leading-snug text-suelo-500">
               Se escribe en <code>interacciones</code> con tu nombre y la fecha. Es lo que
@@ -237,10 +238,3 @@ export function DialogoGestion({
     </Dialog>
   )
 }
-
-const claseSelect = cn(
-  'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1',
-  'text-sm shadow-sm transition-colors',
-  'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
-  'disabled:cursor-not-allowed disabled:opacity-50',
-)

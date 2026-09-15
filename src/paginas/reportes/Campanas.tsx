@@ -88,7 +88,7 @@ export function Campanas() {
       )}
 
       {consulta.error === null && !consulta.isPending && filas.length === 0 && (
-        <p className="rounded-md border border-cal-300 bg-card p-3 text-sm leading-snug text-suelo-700">
+        <p className="rounded-md border border-border bg-card p-3 text-sm leading-snug text-suelo-700">
           No hay ninguna campaña cargada. Sin campañas no hay costo por lead que calcular.
         </p>
       )}
@@ -127,7 +127,7 @@ function GrupoDeMoneda({ moneda, campanas }: { moneda: string; campanas: readonl
   }))
 
   return (
-    <Card className="border-cal-300 shadow-sm">
+    <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-base">
           Inversión en {moneda}

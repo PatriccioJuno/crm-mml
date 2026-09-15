@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { AlertTriangle, CalendarDays, Loader2 } from 'lucide-react'
 import { Button } from '@/componentes/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/componentes/ui/card'
-import { Input } from '@/componentes/ui/input'
+import { Input, claseCampo } from '@/componentes/ui/input'
 import { Label } from '@/componentes/ui/label'
 import {
   Table,
@@ -102,7 +102,7 @@ export function CalendarioCuotas({
   }
 
   return (
-    <Card className="border-cal-300 shadow-sm">
+    <Card>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <CalendarDays className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
@@ -169,7 +169,7 @@ export function CalendarioCuotas({
               id="periodicidad"
               value={plan.periodicidad}
               onChange={(e) => cambiar('periodicidad', e.target.value as PlanDeCuotas['periodicidad'])}
-              className={claseSelect}
+              className={claseCampo}
             >
               {PERIODICIDADES.map((p) => (
                 <option key={p.valor} value={p.valor}>
@@ -255,7 +255,7 @@ function VistaPrevia({
 
   return (
     <div className="space-y-2">
-      <div className="max-h-72 overflow-y-auto rounded-lg border border-cal-300 bg-card">
+      <div className="max-h-72 overflow-y-auto rounded-lg border border-border bg-card">
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
@@ -311,10 +311,3 @@ function VistaPrevia({
     </div>
   )
 }
-
-const claseSelect = cn(
-  'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1',
-  'text-sm shadow-sm transition-colors',
-  'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
-  'disabled:cursor-not-allowed disabled:opacity-50',
-)

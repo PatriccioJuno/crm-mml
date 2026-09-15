@@ -58,7 +58,7 @@ export function ColumnaEmbudo({
       }}
       className={cn(
         'flex w-64 shrink-0 flex-col rounded-lg border transition-colors',
-        sobre ? 'border-azul bg-cal-200' : 'border-cal-300 bg-cal',
+        sobre ? 'border-azul bg-cal-200' : 'border-border bg-cal',
       )}
     >
       <header className="flex items-center justify-between gap-2 rounded-t-lg bg-azul px-3 py-2">
@@ -74,7 +74,7 @@ export function ColumnaEmbudo({
           06 y todas las posteriores. Sale de `exigeCualificacion`, que lee la
           misma comparacion que la restriccion de la base. */}
       {exigeCualificacion(estado) && (
-        <p className="border-b border-cal-300 px-3 py-1 text-[0.7rem] leading-snug text-suelo-500">
+        <p className="border-b border-border px-3 py-1 text-[0.7rem] leading-snug text-suelo-500">
           Exige las 4 respuestas (R5)
         </p>
       )}

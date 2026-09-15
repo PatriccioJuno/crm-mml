@@ -94,9 +94,45 @@ export default {
         // Apuntan a las variables CSS de src/index.css, que a su vez estan
         // definidas con los cuatro colores de marca de arriba.
         // ---------------------------------------------------------------
-        border: 'hsl(var(--border))',
-        input: 'hsl(var(--input))',
+        // Bordes sobre superficie clara: el azul de marca a baja opacidad, no
+        // un gris aparte. Las dos cifras salen del proyecto de Claude Design:
+        // 0.10 para el contorno de una tarjeta, 0.25 para el de un campo (que
+        // tiene que leerse como algo en lo que se puede escribir).
+        // El porque, largo, esta en src/index.css.
+        border: 'hsl(var(--border) / 0.10)',
+        input: 'hsl(var(--input) / 0.25)',
         ring: 'hsl(var(--ring))',
+
+        // ---------------------------------------------------------------
+        // Superficies del proyecto de Claude Design.
+        //
+        // No son colores nuevos: son el azul y el cal a distintas opacidades,
+        // que es como el diseno construye TODA su profundidad. Tenerlos con
+        // nombre evita que cada pantalla invente su propio `bg-azul/[0.07]`.
+        // ---------------------------------------------------------------
+
+        // Sobre superficie CLARA (lienzo cal o tarjeta).
+        tinta: {
+          // Franja de cabecera de tabla y bandas de agrupacion.
+          banda: 'hsl(var(--primary) / 0.05)',
+          grupo: 'hsl(var(--primary) / 0.03)',
+          // Separador entre filas: mas suave que el borde de la tarjeta.
+          fila: 'hsl(var(--primary) / 0.07)',
+        },
+
+        // Sobre superficie AZUL (barra lateral, cabeceras, bloques de urgencia).
+        // El cal a baja opacidad: la unica forma de dar relieve dentro del azul
+        // sin meter un quinto color.
+        velo: {
+          // Tarjeta dentro de un bloque azul.
+          DEFAULT: 'hsl(var(--primary-foreground) / 0.07)',
+          // Chip de usuario, avatar, contadores discretos.
+          chip: 'hsl(var(--primary-foreground) / 0.16)',
+          // Separador vertical entre columnas de una franja de indicadores.
+          linea: 'hsl(var(--primary-foreground) / 0.18)',
+          // Contorno de un boton secundario sobre azul.
+          borde: 'hsl(var(--primary-foreground) / 0.40)',
+        },
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         primary: {
@@ -146,10 +182,12 @@ export default {
           background: {
             muted: '#F6F2EA',
             subtle: '#EDE7DA',
-            DEFAULT: '#FFFFFF',
+            // El mismo blanco tibio de las tarjetas: un grafico de Tremor no
+            // puede ser la unica superficie blanco puro de la pantalla.
+            DEFAULT: '#FDFCF9',
             emphasis: '#3A424A',
           },
-          border: { DEFAULT: '#EDE7DA' },
+          border: { DEFAULT: '#E4E2DC' },
           ring: { DEFAULT: '#DED5C3' },
           content: {
             subtle: '#5F6A75',
@@ -210,12 +248,21 @@ export default {
 
       boxShadow: {
         // Un solo nivel de elevacion en toda la interfaz. No apilar sombras.
-        tarjeta: '0 1px 2px 0 rgb(20 24 28 / 0.04), 0 1px 3px 0 rgb(20 24 28 / 0.06)',
+        //
+        // La sombra es AZUL, no negra. Es el detalle del proyecto de Claude
+        // Design que mas cambia la sensacion del conjunto: una sombra gris
+        // sobre un lienzo calido (#F6F2EA) se ve sucia, porque es el unico
+        // punto de la pantalla sin temperatura. Tenida de azul, la tarjeta
+        // parece apoyada en la misma luz que todo lo demas.
+        tarjeta: '0 1px 2px 0 rgb(15 42 68 / 0.05)',
+        // Solo para lo que de verdad flota por encima: cajon de movil,
+        // dialogos. Nunca en una tarjeta de contenido.
+        flotante: '0 1px 2px 0 rgb(15 42 68 / 0.06), 0 18px 44px -20px rgb(15 42 68 / 0.28)',
         // Nombres que Tremor espera encontrar.
-        'tremor-input': '0 1px 2px 0 rgb(20 24 28 / 0.05)',
-        'tremor-card': '0 1px 2px 0 rgb(20 24 28 / 0.04), 0 1px 3px 0 rgb(20 24 28 / 0.06)',
+        'tremor-input': '0 1px 2px 0 rgb(15 42 68 / 0.05)',
+        'tremor-card': '0 1px 2px 0 rgb(15 42 68 / 0.05)',
         'tremor-dropdown':
-          '0 4px 6px -1px rgb(20 24 28 / 0.08), 0 2px 4px -2px rgb(20 24 28 / 0.08)',
+          '0 4px 6px -1px rgb(15 42 68 / 0.08), 0 2px 4px -2px rgb(15 42 68 / 0.08)',
         'dark-tremor-input': '0 1px 2px 0 rgb(0 0 0 / 0.05)',
         'dark-tremor-card': '0 1px 3px 0 rgb(0 0 0 / 0.2)',
         'dark-tremor-dropdown': '0 4px 6px -1px rgb(0 0 0 / 0.3)',

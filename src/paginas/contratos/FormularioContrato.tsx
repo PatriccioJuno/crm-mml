@@ -1,10 +1,11 @@
 import { useMemo, useRef, useState, type ReactNode } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from 'react-router-dom'
-import { AlertTriangle, ArrowLeft, CheckCircle2, FileSignature, Loader2 } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, FileSignature, Loader2 } from 'lucide-react'
+import { CabeceraPantalla, MigajaVolver } from '@/componentes/marca/CabeceraPantalla'
 import { Button } from '@/componentes/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/componentes/ui/card'
-import { Input } from '@/componentes/ui/input'
+import { Input, claseCampo } from '@/componentes/ui/input'
 import { Label } from '@/componentes/ui/label'
 import { cn } from '@/lib/utils'
 import { useSesion } from '@/auth/ContextoSesion'
@@ -228,7 +229,7 @@ export function FormularioContrato() {
   if (creado !== null) {
     return (
       <div className="mx-auto w-full max-w-3xl">
-        <p className="mb-4 flex items-start gap-2 rounded-md border border-cal-300 bg-card p-4 text-sm">
+        <p className="mb-4 flex items-start gap-2 rounded-md border border-border bg-card p-4 text-sm">
           <CheckCircle2
             className="mt-0.5 h-4 w-4 shrink-0 text-suelo-700"
             strokeWidth={1.75}
@@ -255,7 +256,7 @@ export function FormularioContrato() {
             }}
           />
         ) : (
-          <p className="rounded-md border border-cal-300 bg-card p-4 text-sm leading-snug">
+          <p className="rounded-md border border-border bg-card p-4 text-sm leading-snug">
             <span className="font-bold text-foreground">
               Se escribieron {cuotasGeneradas} {cuotasGeneradas === 1 ? 'cuota' : 'cuotas'}.
             </span>{' '}
@@ -284,20 +285,21 @@ export function FormularioContrato() {
   const filas = oportunidades.data?.filas ?? []
 
   return (
-    <div className="mx-auto w-full max-w-3xl">
-      <Button variant="ghost" size="sm" className="mb-2 -ml-3" asChild>
-        <Link to="/contratos">
-          <ArrowLeft strokeWidth={1.75} aria-hidden="true" />
-          Contratos
-        </Link>
-      </Button>
+    <>
+      <CabeceraPantalla
+        ancho="formulario"
+        migaja={<MigajaVolver a="/contratos">Contratos</MigajaVolver>}
+        titulo="Nuevo contrato"
+        descripcion={
+          <span className="block leading-snug">
+            Nace de una oportunidad que ya llegó a separación o más allá. El precio se propone
+            desde <code>parametros</code>; si el parámetro no está confirmado, lo escribes tú y
+            queda constancia de ello dentro del propio contrato.
+          </span>
+        }
+      />
 
-      <h1 className="text-2xl font-black tracking-tight text-foreground">Nuevo contrato</h1>
-      <p className="mt-1 text-sm leading-snug text-suelo-700">
-        Nace de una oportunidad que ya llegó a separación o más allá. El precio se propone desde{' '}
-        <code>parametros</code>; si el parámetro no está confirmado, lo escribes tú y queda
-        constancia de ello dentro del propio contrato.
-      </p>
+      <div className="mx-auto w-full max-w-3xl">
 
       {oportunidades.isPending && (
         <p className="mt-8 flex items-center gap-2 text-sm text-suelo-500">
@@ -315,7 +317,7 @@ export function FormularioContrato() {
       {!oportunidades.isPending && oportunidades.error === null && (
         <div className="mt-6 space-y-6">
           {/* ------------------- 1 · La oportunidad ------------------- */}
-          <Card className="border-cal-300 shadow-sm">
+          <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-base">1 · ¿De qué oportunidad nace?</CardTitle>
             </CardHeader>
@@ -326,7 +328,7 @@ export function FormularioContrato() {
                   id="oportunidad"
                   value={datos.oportunidadId}
                   onChange={(e) => elegirOportunidad(e.target.value)}
-                  className={cn(claseSelect, error?.campo === 'oportunidadId' && 'border-alerta')}
+                  className={cn(claseCampo, error?.campo === 'oportunidadId' && 'border-alerta')}
                 >
                   <option value="">Elige una…</option>
                   {filas.map((o) => (
@@ -344,7 +346,7 @@ export function FormularioContrato() {
               </div>
 
               {filas.length === 0 && (
-                <p className="rounded-md border border-cal-300 bg-cal p-3 text-xs leading-snug text-suelo-700">
+                <p className="rounded-md border border-border bg-cal p-3 text-xs leading-snug text-suelo-700">
                   No hay ninguna oportunidad en separación o más allá. Un contrato no nace de la
                   nada: primero se registra la separación.
                 </p>
@@ -356,7 +358,7 @@ export function FormularioContrato() {
 
           {/* ------------------- 2 · El precio ------------------- */}
           {elegida !== null && (
-            <Card className="border-cal-300 shadow-sm">
+            <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base">2 · El precio</CardTitle>
               </CardHeader>
@@ -391,7 +393,7 @@ export function FormularioContrato() {
                       value={datos.precioMoneda}
                       onChange={(e) => cambiar('precioMoneda', e.target.value as Moneda | '')}
                       className={cn(
-                        claseSelect,
+                        claseCampo,
                         error?.campo === 'precioMoneda' && 'border-alerta',
                       )}
                     >
@@ -418,7 +420,7 @@ export function FormularioContrato() {
 
           {/* ------------------- 3 · Condiciones ------------------- */}
           {elegida !== null && (
-            <Card className="border-cal-300 shadow-sm">
+            <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base">3 · Condiciones y documento</CardTitle>
               </CardHeader>
@@ -451,7 +453,7 @@ export function FormularioContrato() {
                     id="modalidad"
                     value={datos.modalidadPago}
                     onChange={(e) => cambiar('modalidadPago', e.target.value)}
-                    className={claseSelect}
+                    className={claseCampo}
                   >
                     <option value="">Sin especificar</option>
                     {MODALIDADES.map((m) => (
@@ -489,7 +491,7 @@ export function FormularioContrato() {
                     id="legal"
                     value={datos.estadoLegal}
                     onChange={(e) => cambiar('estadoLegal', e.target.value)}
-                    className={claseSelect}
+                    className={claseCampo}
                   >
                     <option value="">Sin especificar</option>
                     {ESTADOS_LEGALES.map((e) => (
@@ -507,7 +509,7 @@ export function FormularioContrato() {
                     value={datos.observaciones}
                     onChange={(e) => cambiar('observaciones', e.target.value)}
                     rows={3}
-                    className={cn(claseSelect, 'h-auto py-2')}
+                    className={cn(claseCampo, 'h-auto py-2')}
                   />
                 </div>
               </CardContent>
@@ -548,7 +550,8 @@ export function FormularioContrato() {
           )}
         </div>
       )}
-    </div>
+      </div>
+    </>
   )
 }
 
@@ -557,7 +560,7 @@ export function FormularioContrato() {
 function ResumenOportunidad({ oportunidad }: { oportunidad: OportunidadContratable }) {
   const o = oportunidad
   return (
-    <dl className="grid gap-x-6 gap-y-2 rounded-md border border-cal-300 bg-cal p-3 text-sm sm:grid-cols-2">
+    <dl className="grid gap-x-6 gap-y-2 rounded-md border border-border bg-cal p-3 text-sm sm:grid-cols-2">
       <Dato titulo="Persona" valor={o.nombreCompleto} />
       <Dato titulo="Estado" valor={etiquetaEstado(o.estado)} />
       <Dato
@@ -609,7 +612,7 @@ function PropuestaDelPrecio({ parametro }: { parametro: Parametro | null }) {
   const proponible = sePuedeProponer(parametro)
 
   return (
-    <div className="rounded-md border border-cal-300 bg-cal p-3 text-xs leading-snug">
+    <div className="rounded-md border border-border bg-cal p-3 text-xs leading-snug">
       <p className="text-suelo-700">
         Precio de lista según <code>parametros({PARAMETRO_PRECIO})</code>:{' '}
         {proponible ? (
@@ -667,7 +670,7 @@ function ConstanciaPrecio({
       <p className="text-xs leading-snug text-suelo-700">
         Se va a añadir esto a las observaciones del contrato, palabra por palabra:
       </p>
-      <p className="rounded border border-cal-300 bg-card p-2 text-xs leading-snug text-suelo-700">
+      <p className="rounded border border-border bg-card p-2 text-xs leading-snug text-suelo-700">
         {texto}
       </p>
       <label className="flex items-start gap-2 text-sm leading-snug text-foreground">
@@ -696,10 +699,3 @@ function Alerta({ children }: { children: ReactNode }) {
     </p>
   )
 }
-
-const claseSelect = cn(
-  'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1',
-  'text-sm shadow-sm transition-colors',
-  'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
-  'disabled:cursor-not-allowed disabled:opacity-50',
-)

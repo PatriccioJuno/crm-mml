@@ -66,7 +66,7 @@ export function TarjetaReloj({
   children: ReactNode
 }) {
   return (
-    <Card className="border-cal-300 shadow-sm">
+    <Card>
       <CardHeader className="space-y-1 pb-3">
         <p className="text-xs font-black uppercase tracking-wide text-suelo-500">
           Reloj {numero}

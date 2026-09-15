@@ -40,10 +40,13 @@
     --background: 40 40% 94%;
     --foreground: 210 17% 9%;
 
-    /* Tarjetas: blanco puro sobre el cal, para separar sin sombras apiladas */
-    --card: 0 0% 100%;
+    /* Tarjetas: NO es blanco puro, es un blanco tibio (#FDFCF9).
+       Viene del proyecto de Claude Design («CRM Mercado», 14/09/2026): sobre el
+       cal, el blanco puro corta en frio y saca la tarjeta de la familia de
+       color; #FDFCF9 se separa igual de bien y sigue siendo la misma luz. */
+    --card: 45 50% 98%;
     --card-foreground: 210 17% 9%;
-    --popover: 0 0% 100%;
+    --popover: 45 50% 98%;
     --popover-foreground: 210 17% 9%;
 
     /* --- Primario: Azul Noche (60 % de la superficie) --- */
@@ -96,12 +99,35 @@
     --alerta-foreground: 0 0% 100%;
     --alerta-suave: 8 60% 96%;  /* fondo tenue para la tarjeta, no para texto */
 
-    --border: 39 30% 83%;
-    --input: 39 30% 83%;
+    /* --------------------------------------------------------------------
+       BORDES: AZUL TRASLUCIDO, NO UN GRIS PROPIO
+       --------------------------------------------------------------------
+       Antes eran un beige opaco (39 30% 83%) que no salia de ningun sitio: no
+       es un color de marca, era el gris de shadcn tenido a ojo.
+
+       El proyecto de Claude Design dibuja TODOS los bordes de superficie clara
+       como el propio azul a baja opacidad — rgba(15,42,68,0.10) en tarjetas,
+       0.25 en campos. Esto tiene dos ventajas sobre un color fijo:
+
+         1. El borde pertenece a la paleta. Es el mismo azul, solo que casi
+            transparente; no hay un cuarto color que mantener.
+         2. Funciona sobre CUALQUIER superficie clara. El mismo token se ve
+            bien sobre el cal del lienzo y sobre el blanco tibio de la tarjeta,
+            que es justo donde un beige opaco se notaba fuera de tono.
+
+       Por eso el token guarda el azul SIN opacidad, y la opacidad la pone
+       tailwind.config.js al construir el color. */
+    --border: 209 64% 16%;
+    --input: 209 64% 16%;
     --ring: 209 64% 16%;
 
-    /* Un solo radio de esquina en toda la interfaz. */
-    --radius: 0.5rem;
+    /* Un solo radio de esquina en toda la interfaz.
+       12 px, el de las tarjetas del proyecto de diseno. La escala derivada de
+       tailwind.config.js cae justo donde cae el diseno:
+         lg = 12 px  tarjetas y bloques
+         md = 10 px  campos y boton principal
+         sm =  8 px  botones secundarios y elementos de menu */
+    --radius: 0.75rem;
   }
 }
 
@@ -142,5 +168,44 @@
   .bloque-ambar {
     background-color: hsl(var(--ambar));
     color: hsl(var(--ambar-foreground));
+  }
+
+  /* --------------------------------------------------------------------
+     SOBRELINEA — la etiqueta pequena en versalitas
+     --------------------------------------------------------------------
+     El rotulo de 11 px en mayusculas y muy espaciado que el proyecto de
+     Claude Design pone encima de cada dato ("SALDO PENDIENTE", "PLAZO 2",
+     "TOTAL EN MORA"). Aparece decenas de veces; si cada pantalla la reescribe
+     a mano, en tres semanas hay cinco tamanos y cuatro espaciados distintos.
+
+     Va en dos versiones porque el color de texto depende del fondo, y ese es
+     justo el punto donde la regla del ambar se rompe sola si no se separa.
+
+     ⚠ DESVIACION DELIBERADA DEL PROYECTO DE DISENO
+     El diseno dibuja estos rotulos en rgba(20,24,28,0.5). Medido sobre el cal
+     da 3.31:1 y NO cumple WCAG AA (minimo 4.5:1 para texto pequeno), y este
+     rotulo son 11 px, o sea texto pequeno del pequeno. Se sube al 68 %, que
+     mide 5.85:1 y se sigue leyendo como un rotulo secundario.
+
+     Las cifras estan comprobadas, no estimadas. Si alguien vuelve a bajarlo
+     para «que se parezca mas al diseno», que recalcule primero. */
+  .sobrelinea {
+    font-size: 0.6875rem; /* 11 px */
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: hsl(var(--foreground) / 0.68); /* 5.85:1 sobre cal. No bajar. */
+  }
+
+  /* La misma sobrelinea dentro de un bloque azul.
+     55 % = 4.98:1 sobre azul. Es el minimo que cumple: al 50 % cae a 4.37:1. */
+  .sobrelinea-cal {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: hsl(var(--primary-foreground) / 0.55);
   }
 }

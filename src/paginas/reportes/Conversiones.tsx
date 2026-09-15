@@ -72,7 +72,7 @@ export function Conversiones() {
       )}
 
       {conversion === null && !consulta.isPending && consulta.error === null && (
-        <p className="rounded-md border border-cal-300 bg-card p-3 text-sm leading-snug text-suelo-700">
+        <p className="rounded-md border border-border bg-card p-3 text-sm leading-snug text-suelo-700">
           <code>v_conversion</code> no devolvió ninguna fila. No se pintan ceros en su lugar.
         </p>
       )}
@@ -86,7 +86,7 @@ export function Conversiones() {
               const abajo = conteoDeTasa(conversion, t.denominador)
 
               return (
-                <TarjetaTremor key={t.clave} className="p-4 shadow-sm ring-cal-300">
+                <TarjetaTremor key={t.clave} className="p-4 shadow-tarjeta ring-border">
                   <div className="flex items-start justify-between gap-2">
                     <p className="text-xs font-bold leading-snug text-suelo-700">{t.titulo}</p>
 
@@ -136,7 +136,7 @@ export function Conversiones() {
       )}
 
       {/* -------------------- Las que ninguna vista calcula -------------------- */}
-      <div className="rounded-lg border border-cal-300 bg-card p-4">
+      <div className="rounded-lg border border-border bg-card p-4">
         <h3 className="text-sm font-bold text-foreground">
           Fórmulas de §4 que ninguna vista calcula todavía
         </h3>

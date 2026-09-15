@@ -39,7 +39,10 @@ const TableHeader = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => (
-  <thead ref={ref} className={cn("[&_tr]:border-b", className)} {...props} />
+  // La franja de cabecera del proyecto de diseno: azul al 5 %, sin borde
+  // inferior. El borde sobraba — la franja ya separa por si sola, y con las
+  // dos cosas la tabla arrancaba con una raya doble.
+  <thead ref={ref} className={cn("bg-tinta-banda", className)} {...props} />
 ))
 TableHeader.displayName = "TableHeader"
 
@@ -62,7 +65,7 @@ const TableFooter = React.forwardRef<
   <tfoot
     ref={ref}
     className={cn(
-      "border-t bg-muted/50 font-medium [&>tr]:last:border-b-0",
+      "border-t border-tinta-fila bg-tinta-banda font-bold [&>tr]:last:border-b-0",
       className
     )}
     {...props}
@@ -77,7 +80,10 @@ const TableRow = React.forwardRef<
   <tr
     ref={ref}
     className={cn(
-      "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
+      // Separador de fila propio (azul al 7 %), mas suave que el contorno de
+      // la tarjeta que la contiene: en una tabla de veinte filas, el borde
+      // `border-b` de fabrica pesaba mas que los datos.
+      "border-b border-tinta-fila transition-colors hover:bg-tinta-grupo data-[state=selected]:bg-tinta-banda",
       className
     )}
     {...props}
@@ -92,7 +98,10 @@ const TableHead = React.forwardRef<
   <th
     ref={ref}
     className={cn(
-      "h-10 px-2 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+      // Versalitas de 11 px, como el resto de rotulos de la interfaz (ver la
+      // utilidad `.sobrelinea` de src/index.css). Y `font-bold`: 500 no es uno
+      // de los tres pesos del manual de marca.
+      "h-9 px-3 text-left align-middle text-[0.6875rem] font-bold uppercase tracking-[0.08em] text-muted-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
       className
     )}
     {...props}
@@ -107,7 +116,7 @@ const TableCell = React.forwardRef<
   <td
     ref={ref}
     className={cn(
-      "p-2 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+      "px-3 py-2.5 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
       className
     )}
     {...props}

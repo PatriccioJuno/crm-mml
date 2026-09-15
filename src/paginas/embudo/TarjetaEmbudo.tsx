@@ -1,4 +1,5 @@
 import { GripVertical } from 'lucide-react'
+import { claseCampoCompacto } from '@/componentes/ui/input'
 import { cn } from '@/lib/utils'
 import { formatearTelefono } from '@/lib/telefono'
 import {
@@ -70,8 +71,8 @@ export function TarjetaEmbudo({
       }}
       onDragEnd={alTerminarArrastre}
       className={cn(
-        'group rounded-md border bg-card p-3 shadow-sm',
-        'border-cal-300',
+        'group rounded-lg border bg-card p-3 shadow-tarjeta',
+        'border-border',
         fria && 'border-l-4 border-l-alerta',
         ocupada ? 'cursor-progress opacity-60' : 'cursor-grab active:cursor-grabbing',
         arrastrando && 'opacity-40',
@@ -124,12 +125,10 @@ export function TarjetaEmbudo({
           value={t.estado}
           disabled={ocupada}
           onChange={(evento) => alMover(evento.target.value as EstadoEmbudo)}
-          className={cn(
-            'h-8 w-full rounded-md border border-input bg-transparent px-2',
-            'text-xs text-suelo-700 shadow-sm transition-colors',
-            'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
-            'disabled:cursor-not-allowed disabled:opacity-50',
-          )}
+          // Más bajo aún que `claseCampoCompacto`: va dentro de una tarjeta
+          // del tablero, donde cada píxel de alto es una tarjeta menos a la
+          // vista. El borde y el anillo siguen siendo los de la familia.
+          className={cn(claseCampoCompacto, 'h-8 px-2 text-xs text-suelo-700')}
         >
           {ESTADOS.map((e) => (
             <option key={e.valor} value={e.valor}>

@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { AlertTriangle, Loader2 } from 'lucide-react'
+import { Button } from '@/componentes/ui/button'
 import { Input } from '@/componentes/ui/input'
 import { Label } from '@/componentes/ui/label'
 import { useSesion } from '@/auth/ContextoSesion'
@@ -103,7 +104,7 @@ export function PantallaEntrar() {
                 required
                 value={correo}
                 onChange={(e) => setCorreo(e.target.value)}
-                className="h-10 border-azul-600 bg-azul-800 text-cal shadow-none focus-visible:ring-2 focus-visible:ring-ambar"
+                className="border-azul-600 bg-azul-800 text-cal focus-visible:ring-ambar focus-visible:ring-offset-azul"
               />
             </div>
 
@@ -119,23 +120,24 @@ export function PantallaEntrar() {
                 required
                 value={contrasena}
                 onChange={(e) => setContrasena(e.target.value)}
-                className="h-10 border-azul-600 bg-azul-800 text-cal shadow-none focus-visible:ring-2 focus-visible:ring-ambar"
+                className="border-azul-600 bg-azul-800 text-cal focus-visible:ring-ambar focus-visible:ring-offset-azul"
               />
             </div>
           </div>
 
           {/* Unica accion principal de la pantalla, y unico ambar solido:
-              bg-ambar + text-suelo = 8.9:1, cumple WCAG AA. */}
-          <button
-            type="submit"
-            disabled={enviando}
-            className="mt-8 flex h-10 w-full items-center justify-center gap-2 rounded-md bg-ambar text-sm font-bold text-suelo transition-colors hover:bg-ambar/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cal focus-visible:ring-offset-2 focus-visible:ring-offset-azul disabled:pointer-events-none disabled:opacity-60"
-          >
+              bg-ambar + text-suelo = 8.9:1, cumple WCAG AA. Y esta sobre azul,
+              que es la otra mitad de la regla.
+
+              Era un <button> a mano que repetia, clase por clase, lo que hoy
+              hace `variant="ambar"`. Se cambio al componente para que haya un
+              solo sitio donde vive el aspecto del boton principal. */}
+          <Button type="submit" variant="ambar" size="lg" disabled={enviando} className="mt-8 w-full">
             {enviando && (
               <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2} aria-hidden="true" />
             )}
             {enviando ? 'Entrando…' : 'Entrar'}
-          </button>
+          </Button>
         </form>
 
         <p className="mt-8 text-[0.75rem] leading-relaxed text-azul-300">

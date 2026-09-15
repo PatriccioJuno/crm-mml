@@ -60,7 +60,7 @@ export function BloqueHoy({
   return (
     <Card
       className={cn(
-        'overflow-hidden shadow-sm',
+        'overflow-hidden',
         esAlerta && 'border-alerta',
         esAzul && 'border-azul',
       )}
@@ -70,7 +70,7 @@ export function BloqueHoy({
           'flex-row items-start justify-between gap-4 space-y-0 px-4 py-4 sm:px-6',
           esAlerta && 'bg-alerta text-alerta-foreground',
           esAzul && 'bg-azul text-cal',
-          tono === 'neutro' && 'border-b border-cal-200',
+          tono === 'neutro' && 'border-b border-tinta-fila',
         )}
       >
         <div className="min-w-0">
@@ -133,11 +133,11 @@ export function BloqueHoy({
         )}
 
         {!cargando && error === null && conteo !== null && conteo > 0 && (
-          <ul className="divide-y divide-cal-200">{children}</ul>
+          <ul className="divide-y divide-tinta-fila">{children}</ul>
         )}
 
         {descartadas > 0 && (
-          <p className="border-t border-cal-200 px-4 py-2 sm:px-6 text-xs font-bold text-alerta">
+          <p className="border-t border-tinta-fila px-4 py-2 sm:px-6 text-xs font-bold text-alerta">
             🔴 {descartadas}{' '}
             {descartadas === 1 ? 'fila no se pudo leer' : 'filas no se pudieron leer'} y no se
             están mostrando. Revisa el esquema antes de fiarte de este conteo.

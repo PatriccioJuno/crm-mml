@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/componentes/ui/dialog'
-import { Input } from '@/componentes/ui/input'
+import { Input, claseCampo } from '@/componentes/ui/input'
 import { Label } from '@/componentes/ui/label'
 import { cn } from '@/lib/utils'
 import { useSesion } from '@/auth/ContextoSesion'
@@ -205,11 +205,9 @@ function DialogoInteraccion({
               rows={3}
               autoFocus
               placeholder="Contestó, pidió precio, quedamos en llamar el viernes…"
-              className={cn(
-                'flex w-full rounded-md border border-input bg-transparent px-3 py-2',
-                'text-sm shadow-sm transition-colors placeholder:text-muted-foreground',
-                'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
-              )}
+              // `h-auto py-2`: el alto fijo de `claseCampo` es para campos de
+              // una línea; un textarea lo marca `rows`.
+              className={cn(claseCampo, 'h-auto py-2 text-base font-normal')}
             />
           </div>
 
@@ -383,11 +381,7 @@ function SelectSimple({
       id={id}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className={cn(
-        'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1',
-        'text-sm shadow-sm transition-colors',
-        'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
-      )}
+      className={claseCampo}
     >
       {opciones.map((o) => (
         <option key={o.valor} value={o.valor}>

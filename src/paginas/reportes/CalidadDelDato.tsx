@@ -55,7 +55,7 @@ export function CalidadDelDato() {
       )}
 
       {calidad === null && !consulta.isPending && consulta.error === null && (
-        <p className="rounded-md border border-cal-300 bg-card p-3 text-sm leading-snug text-suelo-700">
+        <p className="rounded-md border border-border bg-card p-3 text-sm leading-snug text-suelo-700">
           La vista no devolvió ninguna fila. No se enseña un cero en su lugar: «no hay respuesta»
           y «no hay incidencias» no son lo mismo.
         </p>
@@ -66,7 +66,7 @@ export function CalidadDelDato() {
           {INDICADORES_CALIDAD.map((i) => {
             const valor = calidad[i.clave] ?? 0
             return (
-              <TarjetaTremor key={i.clave} className="p-4 shadow-sm ring-cal-300">
+              <TarjetaTremor key={i.clave} className="p-4 shadow-tarjeta ring-border">
                 <p className="text-xs font-bold leading-snug text-suelo-700">{i.titulo}</p>
                 <Metric
                   className={cn(

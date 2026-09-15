@@ -12,6 +12,7 @@ import {
   Search,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import { CabeceraPantalla } from '@/componentes/marca/CabeceraPantalla'
 import { Badge } from '@/componentes/ui/badge'
 import { Button } from '@/componentes/ui/button'
 import { Input } from '@/componentes/ui/input'
@@ -129,19 +130,24 @@ export function PantallaCobranza() {
 
   return (
     <div className="w-full">
-      <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black tracking-tight text-foreground">Cobranza</h1>
-          <p className="mt-1 text-sm text-suelo-700">
+      <CabeceraPantalla
+        titulo="Cobranza"
+        descripcion={
+          <>
             Las cuotas vivas de los socios que ya compraron. Sale de <code>v_cobranza</code>.
-          </p>
-        </div>
-
-        <Button variant="outline" onClick={() => exportar(visibles)} disabled={visibles.length === 0}>
-          <Download strokeWidth={1.75} aria-hidden="true" />
-          Exportar CSV
-        </Button>
-      </header>
+          </>
+        }
+        acciones={
+          <Button
+            variant="outlineCal"
+            onClick={() => exportar(visibles)}
+            disabled={visibles.length === 0}
+          >
+            <Download strokeWidth={1.75} aria-hidden="true" />
+            Exportar CSV
+          </Button>
+        }
+      />
 
       {/* ------------------------- Los dos KPI ------------------------- */}
       <div className="mb-6 grid gap-4 md:grid-cols-2">
@@ -185,12 +191,12 @@ export function PantallaCobranza() {
       </div>
 
       {nota !== null && (
-        <p className="mb-4 rounded-md border border-cal-300 bg-card p-3 text-sm font-bold leading-snug text-foreground">
+        <p className="mb-4 rounded-md border border-border bg-card p-3 text-sm font-bold leading-snug text-foreground">
           {nota}
         </p>
       )}
       {copiado !== null && (
-        <p className="mb-4 rounded-md border border-cal-300 bg-card p-3 text-sm leading-snug text-suelo-700">
+        <p className="mb-4 rounded-md border border-border bg-card p-3 text-sm leading-snug text-suelo-700">
           {copiado}
         </p>
       )}
@@ -214,7 +220,7 @@ export function PantallaCobranza() {
 
       {/* ------------------------- La tabla ------------------------- */}
       {consulta.error === null && !consulta.isPending && (
-        <div className="overflow-x-auto rounded-lg border border-cal-300 bg-card">
+        <div className="overflow-x-auto rounded-lg border border-border bg-card">
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
@@ -357,7 +363,7 @@ function TarjetaKPI({
   return (
     <TarjetaTremor
       className={cn(
-        'ring-cal-300 shadow-sm',
+        'ring-border shadow-tarjeta',
         destacada && 'bg-azul ring-azul-600',
       )}
     >

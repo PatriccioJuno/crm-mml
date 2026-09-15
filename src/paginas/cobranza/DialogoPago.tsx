@@ -9,9 +9,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/componentes/ui/dialog'
-import { Input } from '@/componentes/ui/input'
+import { Input, claseCampo } from '@/componentes/ui/input'
 import { Label } from '@/componentes/ui/label'
-import { cn } from '@/lib/utils'
 import { useSesion } from '@/auth/ContextoSesion'
 import { MONEDAS, aNumero, formatearMonto, type Moneda } from '@/lib/dinero'
 import { fechaCorta } from '@/lib/fechas'
@@ -171,7 +170,7 @@ export function DialogoPago({
 
         {!buscando && cuota !== null && (
           <div className="space-y-4">
-            <dl className="grid grid-cols-2 gap-x-6 gap-y-2 rounded-md border border-cal-300 bg-cal p-3 text-sm">
+            <dl className="grid grid-cols-2 gap-x-6 gap-y-2 rounded-md border border-border bg-cal p-3 text-sm">
               <div>
                 <dt className="text-xs text-suelo-500">Monto de la cuota</dt>
                 <dd className="font-bold tabular-nums text-foreground">
@@ -213,7 +212,7 @@ export function DialogoPago({
                   value={datos.montoMoneda}
                   onChange={(e) => cambiar('montoMoneda', e.target.value as Moneda | '')}
                   disabled={cuota.moneda !== null}
-                  className={claseSelect}
+                  className={claseCampo}
                 >
                   <option value="">Elige…</option>
                   {MONEDAS.map((m) => (
@@ -248,7 +247,7 @@ export function DialogoPago({
                   id="medio"
                   value={datos.medio}
                   onChange={(e) => cambiar('medio', e.target.value)}
-                  className={claseSelect}
+                  className={claseCampo}
                 >
                   <option value="">Sin especificar</option>
                   {MEDIOS_DE_PAGO.map((m) => (
@@ -338,10 +337,3 @@ export function DialogoPago({
     </Dialog>
   )
 }
-
-const claseSelect = cn(
-  'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1',
-  'text-sm shadow-sm transition-colors',
-  'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
-  'disabled:cursor-not-allowed disabled:opacity-50',
-)

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { AlertTriangle, Loader2, Lock, Pencil, Plus } from 'lucide-react'
+import { CabeceraPantalla } from '@/componentes/marca/CabeceraPantalla'
 import { Button } from '@/componentes/ui/button'
 import {
   Table,
@@ -79,24 +80,21 @@ export function PantallaInventario() {
 
   return (
     <div className="w-full">
-      <header className="mb-5 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black tracking-tight text-foreground">Inventario</h1>
-          <p className="mt-1 text-sm text-suelo-700">
-            Dos semáforos por fila: el estado comercial y el estado del dato.
-          </p>
-        </div>
-
-        {/* Alta: solo dirección y administración, copiado de `unidades_escribir`.
-            Esconderlo no protege nada — lo protege RLS. Evita ofrecer un
-            formulario que iba a fallar al guardar. */}
-        {mantiene && (
-          <Button onClick={() => setEditando(null)}>
-            <Plus strokeWidth={2} aria-hidden="true" />
-            Nueva unidad
-          </Button>
-        )}
-      </header>
+      <CabeceraPantalla
+        titulo="Inventario"
+        descripcion="Dos semáforos por fila: el estado comercial y el estado del dato."
+        acciones={
+          /* Alta: solo dirección y administración, copiado de `unidades_escribir`.
+             Esconderlo no protege nada — lo protege RLS. Evita ofrecer un
+             formulario que iba a fallar al guardar. */
+          mantiene ? (
+            <Button variant="ambar" onClick={() => setEditando(null)}>
+              <Plus strokeWidth={2} aria-hidden="true" />
+              Nueva unidad
+            </Button>
+          ) : undefined
+        }
+      />
 
       <AvisoBloqueo />
 
@@ -121,7 +119,7 @@ export function PantallaInventario() {
 
       {consulta.error === null && !consulta.isPending && (
         <TooltipProvider delayDuration={150}>
-          <div className="overflow-x-auto rounded-lg border border-cal-300 bg-card">
+          <div className="overflow-x-auto rounded-lg border border-border bg-card">
             <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">

@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { AlertTriangle, ArrowRight, Loader2, Plus, ShieldCheck } from 'lucide-react'
+import { CabeceraPantalla } from '@/componentes/marca/CabeceraPantalla'
 import { Button } from '@/componentes/ui/button'
 import {
   Table,
@@ -59,28 +60,25 @@ export function PantallaSeparaciones() {
 
   return (
     <div className="w-full">
-      <header className="mb-4 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black tracking-tight text-foreground">Separaciones</h1>
-          <p className="mt-1 text-sm text-suelo-700">
-            Ordenadas por el plazo que vence antes. Los dos relojes van por separado.
-          </p>
-        </div>
-
-        {rol !== null && REGISTRAN.includes(rol) && (
-          <Button asChild>
-            <Link to="/separaciones/nueva">
-              <Plus strokeWidth={2} aria-hidden="true" />
-              Nueva separación
-            </Link>
-          </Button>
-        )}
-      </header>
+      <CabeceraPantalla
+        titulo="Separaciones"
+        descripcion="Ordenadas por el plazo que vence antes. Los dos relojes van por separado."
+        acciones={
+          rol !== null && REGISTRAN.includes(rol) ? (
+            <Button asChild variant="ambar">
+              <Link to="/separaciones/nueva">
+                <Plus strokeWidth={2} aria-hidden="true" />
+                Nueva separación
+              </Link>
+            </Button>
+          ) : undefined
+        }
+      />
 
       <AvisoDosRelojes className="mb-4" />
 
       {pendientes > 0 && (
-        <p className="mb-4 flex items-start gap-2 rounded-md border border-cal-300 bg-card p-3 text-sm">
+        <p className="mb-4 flex items-start gap-2 rounded-md border border-border bg-card p-3 text-sm">
           <ShieldCheck
             className="mt-0.5 h-4 w-4 shrink-0 text-suelo-700"
             strokeWidth={1.75}
@@ -118,7 +116,7 @@ export function PantallaSeparaciones() {
       )}
 
       {consulta.error === null && !consulta.isPending && (
-        <div className="overflow-x-auto rounded-lg border border-cal-300 bg-card">
+        <div className="overflow-x-auto rounded-lg border border-border bg-card">
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">

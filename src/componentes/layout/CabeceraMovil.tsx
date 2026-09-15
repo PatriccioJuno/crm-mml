@@ -41,8 +41,8 @@ export function CabeceraMovil({ alAbrir }: { alAbrir: () => void }) {
         className={cn(
           // 44 px de lado. Es el tamaño minimo de un objetivo tactil: por
           // debajo, se falla con el pulgar y el usuario culpa al CRM.
-          'flex h-11 w-11 shrink-0 items-center justify-center rounded-md',
-          'text-cal transition-colors hover:bg-azul-600',
+          'flex h-11 w-11 shrink-0 items-center justify-center rounded-sm',
+          'text-cal transition-colors hover:bg-velo',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ambar',
         )}
       >

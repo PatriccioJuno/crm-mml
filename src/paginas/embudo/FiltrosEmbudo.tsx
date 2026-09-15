@@ -1,4 +1,5 @@
 import { FilterX } from 'lucide-react'
+import { claseCampoCompacto } from '@/componentes/ui/input'
 import { Button } from '@/componentes/ui/button'
 import { cn } from '@/lib/utils'
 import { etiquetaOrigen, type Tarjeta } from '@/lib/embudo'
@@ -195,11 +196,7 @@ function Desplegable({
         id={id}
         value={valor}
         onChange={(evento) => alCambiar(evento.target.value)}
-        className={cn(
-          'h-9 min-w-44 rounded-md border border-input bg-card px-3',
-          'text-sm shadow-sm transition-colors',
-          'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
-        )}
+        className={cn(claseCampoCompacto, 'min-w-44')}
       >
         <option value={TODOS}>Todos</option>
         {opciones.map((o) => (

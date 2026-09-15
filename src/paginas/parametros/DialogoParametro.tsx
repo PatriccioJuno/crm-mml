@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/componentes/ui/dialog'
-import { Input } from '@/componentes/ui/input'
+import { Input, claseCampo } from '@/componentes/ui/input'
 import { Label } from '@/componentes/ui/label'
 import { cn } from '@/lib/utils'
 import {
@@ -119,7 +119,7 @@ export function DialogoParametro({
               id="semaforo"
               value={datos.estadoSemaforo}
               onChange={(e) => cambiar('estadoSemaforo', e.target.value as EstadoSemaforo)}
-              className={claseSelect}
+              className={claseCampo}
             >
               {SEMAFOROS_PARAMETRO.map((s) => (
                 <option key={s.valor} value={s.valor}>
@@ -165,7 +165,7 @@ export function DialogoParametro({
                   id="valor-moneda"
                   value={datos.valorMoneda}
                   onChange={(e) => cambiar('valorMoneda', e.target.value)}
-                  className={claseSelect}
+                  className={claseCampo}
                 >
                   <option value="">— sin moneda —</option>
                   {MONEDAS.map((m) => (
@@ -237,7 +237,7 @@ export function DialogoParametro({
               value={datos.nota}
               onChange={(e) => cambiar('nota', e.target.value)}
               rows={3}
-              className={cn(claseSelect, 'h-auto py-2')}
+              className={cn(claseCampo, 'h-auto py-2')}
               placeholder="Contexto, fundamento, qué falta para cerrarlo."
             />
           </div>
@@ -281,13 +281,6 @@ export function DialogoParametro({
     </Dialog>
   )
 }
-
-const claseSelect = cn(
-  'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1',
-  'text-sm shadow-sm transition-colors',
-  'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
-  'disabled:cursor-not-allowed disabled:opacity-50',
-)
 
 function Campo({
   id,

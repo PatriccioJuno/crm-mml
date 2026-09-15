@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { CabeceraPantalla } from '@/componentes/marca/CabeceraPantalla'
 import { Badge } from '@/componentes/ui/badge'
 import { useSesion } from '@/auth/ContextoSesion'
 import type { Perfil } from '@/auth/tipos-sesion'
@@ -104,20 +105,24 @@ function HoyConPerfil({ perfil }: { perfil: Perfil }) {
   })
 
   return (
-    <div className="mx-auto w-full max-w-4xl">
-      <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-black tracking-tight text-foreground">Hoy</h1>
-          <p className="mt-1 text-sm text-suelo-700">
+    <>
+      {/* La cabecera va FUERA del contenedor de ancho máximo: su franja azul
+          tiene que llegar a los bordes de la ventana, y `max-w-4xl mx-auto`
+          se lo impediría. El texto de dentro sí se alinea a ese mismo ancho,
+          vía `ancho="medio"`. */}
+      <CabeceraPantalla
+        titulo="Hoy"
+        ancho="medio"
+        descripcion={
+          <>
             {perfil.nombre} · {fechaCorta(new Date())}
-          </p>
-        </div>
-        <Badge variant="outline" className="border-cal-300 font-normal text-suelo-500">
-          Lo más urgente arriba
-        </Badge>
-      </header>
+          </>
+        }
+        distintivos={<Badge variant="outlineCal">Lo más urgente arriba</Badge>}
+      />
 
-      <div className="space-y-4">
+      <div className="mx-auto w-full max-w-4xl">
+        <div className="space-y-4">
         {/* ---- 0 · SOLO DIRECCION ---- */}
         {esDireccion && (
           <BloqueHoy
@@ -225,15 +230,16 @@ function HoyConPerfil({ perfil }: { perfil: Perfil }) {
               ocupado={completando === t.id}
             />
           ))}
-        </BloqueHoy>
-      </div>
+          </BloqueHoy>
+        </div>
 
-      <p className="mt-6 text-xs leading-relaxed text-suelo-500">
-        Los conteos salen de <code>v_separaciones_vigilancia</code>,{' '}
-        <code>v_sin_siguiente_paso</code> y <code>tareas</code>. Ninguna cifra de esta pantalla
-        está escrita en el código.
-      </p>
-    </div>
+        <p className="mt-6 text-xs leading-relaxed text-suelo-500">
+          Los conteos salen de <code>v_separaciones_vigilancia</code>,{' '}
+          <code>v_sin_siguiente_paso</code> y <code>tareas</code>. Ninguna cifra de esta pantalla
+          está escrita en el código.
+        </p>
+      </div>
+    </>
   )
 }
 

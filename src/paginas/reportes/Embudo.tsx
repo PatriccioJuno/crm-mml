@@ -82,7 +82,7 @@ export function Embudo() {
 
       {actual.error === null && !actual.isPending && (
         <div className="grid gap-4 lg:grid-cols-2">
-          <Card className="border-cal-300 shadow-sm">
+          <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-base">Ahora mismo</CardTitle>
             </CardHeader>
@@ -102,7 +102,7 @@ export function Embudo() {
             </CardContent>
           </Card>
 
-          <Card className="border-cal-300 shadow-sm">
+          <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-base">El detalle que la barra no dice</CardTitle>
             </CardHeader>
@@ -146,7 +146,7 @@ export function Embudo() {
         {porLanzamiento.error !== null && <Error mensaje={porLanzamiento.error.message} />}
 
         {porLanzamiento.error === null && !porLanzamiento.isPending && (
-          <Card className="border-cal-300 shadow-sm">
+          <Card>
             <CardContent className="pt-6">
               {pivote.lanzamientos.length === 0 ? (
                 <p className="py-6 text-center text-sm text-suelo-500">

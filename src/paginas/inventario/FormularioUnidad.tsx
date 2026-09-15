@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/componentes/ui/dialog'
-import { Input } from '@/componentes/ui/input'
+import { Input, claseCampo } from '@/componentes/ui/input'
 import { Label } from '@/componentes/ui/label'
 import { cn } from '@/lib/utils'
 import { cargarParametros, simboloSemaforo } from '@/lib/parametros'
@@ -167,7 +167,7 @@ export function FormularioUnidad({
                 id="estado-comercial"
                 value={datos.estadoComercial}
                 onChange={(e) => cambiar('estadoComercial', e.target.value as EstadoUnidad)}
-                className={claseSelect}
+                className={claseCampo}
               >
                 {ESTADOS_UNIDAD.map((e) => (
                   <option key={e.valor} value={e.valor}>
@@ -184,7 +184,7 @@ export function FormularioUnidad({
                 id="estado-dato"
                 value={datos.estadoDato}
                 onChange={(e) => cambiar('estadoDato', e.target.value as Semaforo)}
-                className={claseSelect}
+                className={claseCampo}
               >
                 {SEMAFOROS.map((s) => (
                   <option key={s} value={s}>
@@ -226,7 +226,7 @@ export function FormularioUnidad({
               id="precio-parametro"
               value={datos.precioParametro}
               onChange={(e) => cambiar('precioParametro', e.target.value)}
-              className={claseSelect}
+              className={claseCampo}
               disabled={parametros.isPending}
             >
               <option value="">— sin parámetro asignado —</option>
@@ -254,7 +254,7 @@ export function FormularioUnidad({
               value={datos.observaciones}
               onChange={(e) => cambiar('observaciones', e.target.value)}
               rows={2}
-              className={cn(claseSelect, 'h-auto py-2')}
+              className={cn(claseCampo, 'h-auto py-2')}
             />
           </div>
 
@@ -294,13 +294,6 @@ export function FormularioUnidad({
     </Dialog>
   )
 }
-
-const claseSelect = cn(
-  'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1',
-  'text-sm shadow-sm transition-colors',
-  'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
-  'disabled:cursor-not-allowed disabled:opacity-50',
-)
 
 function Campo({
   id,

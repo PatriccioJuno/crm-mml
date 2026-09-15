@@ -78,7 +78,7 @@ export function InsumosSemanales() {
         </p>
       </div>
 
-      <Card className="border-cal-300 shadow-sm">
+      <Card>
         <CardContent className="flex flex-wrap items-end gap-4 pt-6">
           <div className="space-y-2">
             <Label htmlFor="desde">Desde</Label>
@@ -125,7 +125,7 @@ export function InsumosSemanales() {
       </Card>
 
       {rango === null && (
-        <p className="rounded-md border border-cal-300 bg-card p-3 text-sm leading-snug text-suelo-700">
+        <p className="rounded-md border border-border bg-card p-3 text-sm leading-snug text-suelo-700">
           Elige el rango y pulsa el botón. No se consulta nada antes: un rango por defecto
           consultado solo porque la pantalla se abrió es una cifra que nadie pidió.
         </p>
@@ -189,7 +189,7 @@ function Resultado({ insumos }: { insumos: Insumos }) {
       </div>
 
       {/* ---------------- Actividad ---------------- */}
-      <Card className="border-cal-300 shadow-sm">
+      <Card>
         <CardHeader className="flex-row items-start justify-between gap-3 space-y-0 pb-2">
           <div>
             <CardTitle className="text-base">Interacciones por día</CardTitle>
@@ -236,7 +236,7 @@ function Resultado({ insumos }: { insumos: Insumos }) {
       </Card>
 
       {/* ---------------- Cambios de estado ---------------- */}
-      <Card className="border-cal-300 shadow-sm">
+      <Card>
         <CardHeader className="flex-row items-start justify-between gap-3 space-y-0 pb-2">
           <div>
             <CardTitle className="text-base">Cambios de estado por día</CardTitle>
@@ -279,7 +279,7 @@ function Resultado({ insumos }: { insumos: Insumos }) {
       </Card>
 
       {/* ---------------- Pagos ---------------- */}
-      <Card className="border-cal-300 shadow-sm">
+      <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-base">Pagos registrados</CardTitle>
           <p className="mt-1 text-xs text-suelo-500">
@@ -332,7 +332,7 @@ function Contador({
   fuente: string
 }) {
   return (
-    <div className="rounded-lg border border-cal-300 bg-card p-4">
+    <div className="rounded-lg border border-border bg-card p-4">
       <p className="text-xs font-bold text-suelo-700">{titulo}</p>
       <p className="mt-1 text-3xl font-black tabular-nums text-foreground">{valor}</p>
       <p className="mt-1 text-xs leading-snug text-suelo-500">{fuente}</p>

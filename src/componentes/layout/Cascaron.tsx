@@ -42,6 +42,12 @@ import { CabeceraMovil } from './CabeceraMovil'
  *    olvidara de ponerlo salia pegada al borde (le pasaba a Parametros).
  *    Puesto una sola vez, la siguiente pantalla que alguien escriba nace bien
  *    por defecto, sin acordarse de nada.
+ *
+ *    ⚠ `CabeceraPantalla` (src/componentes/marca/CabeceraPantalla.tsx) deshace
+ *    este relleno con margenes negativos, para que su franja azul llegue a los
+ *    bordes como en el proyecto de diseno. Sus valores estan escritos como el
+ *    negativo EXACTO de los de aqui. Si cambias el relleno de <main>, cambia
+ *    tambien los de alli o la franja dejara de cuadrar.
  */
 export function Cascaron() {
   const [menuAbierto, setMenuAbierto] = useState(false)
@@ -128,7 +134,7 @@ export function Cascaron() {
             aria-modal="true"
             aria-label="Menú de navegación"
             className={cn(
-              'absolute inset-y-0 left-0 outline-none',
+              'absolute inset-y-0 left-0 shadow-flotante outline-none',
               'animate-in slide-in-from-left duration-200 ease-out',
             )}
           >

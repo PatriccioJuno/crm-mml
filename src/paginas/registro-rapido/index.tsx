@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AlertTriangle, Check, Loader2, UserPlus } from 'lucide-react'
+import { CabeceraPantalla } from '@/componentes/marca/CabeceraPantalla'
 import { Badge } from '@/componentes/ui/badge'
 import { Button } from '@/componentes/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/componentes/ui/card'
@@ -140,25 +141,32 @@ export function PantallaRegistroRapido() {
   const listo = nombre.trim() !== '' && telefono.trim() !== '' && consentimiento
 
   return (
-    <div className="mx-auto w-full max-w-xl">
-      <header className="mb-6">
-        <h1 className="text-2xl font-black tracking-tight text-foreground">Registro rápido</h1>
-        <p className="mt-1 text-sm text-suelo-700">
-          Cuatro campos. Enter avanza; en la casilla, Enter guarda.
-        </p>
-      </header>
+    <>
+      {/* Fuera del contenedor de ancho máximo: la franja azul llega al borde.
+          El texto de dentro se alinea al mismo ancho vía `ancho="estrecho"`. */}
+      <CabeceraPantalla
+        titulo="Registro rápido"
+        ancho="estrecho"
+        descripcion="Cuatro campos. Enter avanza; en la casilla, Enter guarda."
+        distintivos={
+          altas > 0 ? (
+            <Badge variant="cal" aria-live="polite">
+              {altas} {altas === 1 ? 'registro' : 'registros'} en esta sesión
+            </Badge>
+          ) : undefined
+        }
+      />
 
-      <Card className="overflow-hidden shadow-sm">
+      <div className="mx-auto w-full max-w-xl">
+      <Card className="overflow-hidden">
+        {/* El contador de altas de la sesión subió a la cabecera de pantalla:
+            en el diseño es un dato de contexto de la pantalla, no del
+            formulario, y ahí no compite con el título de la tarjeta. */}
         <CardHeader className="flex-row items-center justify-between gap-3 space-y-0 pb-4">
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle className="flex items-center gap-2">
             <UserPlus className="h-4 w-4 text-suelo-500" strokeWidth={1.75} aria-hidden="true" />
             Nuevo prospecto
           </CardTitle>
-          {altas > 0 && (
-            <Badge variant="secondary" aria-live="polite">
-              {altas} {altas === 1 ? 'registro' : 'registros'} en esta sesión
-            </Badge>
-          )}
         </CardHeader>
 
         <CardContent className="pb-6">
@@ -224,10 +232,14 @@ export function PantallaRegistroRapido() {
                 value={origen}
                 onChange={(e) => setOrigen(e.target.value as Origen)}
                 onKeyDown={(e) => alPulsar(e, refConsentimiento.current)}
+                // Mismas medidas que <Input>: 52 px de alto, borde de 1.5 px y
+                // texto de 16 px. Un <select> nativo no hereda de ese
+                // componente, así que si allí cambian las medidas, aquí
+                // también. El porqué de los 52 px está en ui/input.tsx.
                 className={cn(
-                  'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1',
-                  'text-sm shadow-sm transition-colors',
-                  'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+                  'flex h-[3.25rem] w-full rounded-md border-[1.5px] border-input bg-background px-4 py-1',
+                  'text-base font-bold text-foreground transition-colors',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background',
                   'disabled:cursor-not-allowed disabled:opacity-50',
                 )}
               >
@@ -246,7 +258,7 @@ export function PantallaRegistroRapido() {
             <div
               className={cn(
                 'flex items-start gap-3 rounded-md border p-3',
-                error?.campo === 'consentimiento' ? 'border-alerta' : 'border-cal-300',
+                error?.campo === 'consentimiento' ? 'border-alerta' : 'border-border',
               )}
             >
               <input
@@ -291,12 +303,15 @@ export function PantallaRegistroRapido() {
           </p>
           <Button
             type="button"
+            variant="ambar"
+            size="lg"
             onClick={() => void guardar()}
             disabled={!listo || guardando}
             className={cn(
-              'h-11 w-full shrink-0 px-6 text-base font-bold sm:w-auto',
-              'bg-ambar text-suelo hover:bg-ambar/90',
-              'focus-visible:ring-2 focus-visible:ring-cal',
+              'w-full shrink-0 sm:w-auto',
+              // Deshabilitado no se «apaga» con opacidad: sobre azul, un ámbar
+              // al 50 % queda ilegible. Se cambia por el azul claro del propio
+              // bloque, que dice «todavía no» sin desaparecer.
               'disabled:bg-azul-600 disabled:text-azul-300 disabled:opacity-100',
             )}
           >
@@ -316,7 +331,7 @@ export function PantallaRegistroRapido() {
           No interrumpe: el formulario ya esta limpio y enfocado. Esto es el
           acuse de recibo, debajo, para mirarlo solo si hace falta. */}
       {ultimo !== null && (
-        <Card className="mt-4 border-cal-300 shadow-none" aria-live="polite">
+        <Card className="mt-4 shadow-none" aria-live="polite">
           <CardContent className="flex items-start gap-3 py-4">
             <Check className="mt-0.5 h-4 w-4 shrink-0 text-suelo-700" strokeWidth={2} aria-hidden="true" />
             <div className="min-w-0 flex-1 text-sm">
@@ -366,6 +381,7 @@ export function PantallaRegistroRapido() {
           </CardContent>
         </Card>
       )}
-    </div>
+      </div>
+    </>
   )
 }

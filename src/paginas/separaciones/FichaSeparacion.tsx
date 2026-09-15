@@ -9,6 +9,8 @@ import {
   Paperclip,
   ShieldCheck,
 } from 'lucide-react'
+import { CabeceraPantalla, MigajaVolver } from '@/componentes/marca/CabeceraPantalla'
+import { Badge } from '@/componentes/ui/badge'
 import { Button } from '@/componentes/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/componentes/ui/card'
 import { cn } from '@/lib/utils'
@@ -110,7 +112,7 @@ export function FichaSeparacion() {
     return (
       <div className="mx-auto w-full max-w-3xl">
         <Volver />
-        <p className="mt-4 rounded-md border border-cal-300 bg-card p-4 text-sm">
+        <p className="mt-4 rounded-md border border-border bg-card p-4 text-sm">
           No existe ninguna separación con ese identificador, o tu rol no puede leerla
           (política <code>sep_leer</code>).
         </p>
@@ -119,22 +121,27 @@ export function FichaSeparacion() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl">
-      <Volver />
+    <>
+      {/* La cabecera va fuera del contenedor de ancho máximo y ANTES que nada:
+          su franja azul se sube con margen negativo hasta el borde, así que
+          cualquier cosa dibujada encima le quedaría debajo. Por eso el
+          «volver» es ahora la miga de pan, como en el proyecto de diseño. */}
+      <CabeceraPantalla
+        ancho="formulario"
+        migaja={<MigajaVolver a="/separaciones">Separaciones</MigajaVolver>}
+        titulo={s.nombreCompleto ?? 'Persona sin nombre legible'}
+        descripcion={`Registrada el ${fechaHora(s.creadoEl)}`}
+        distintivos={
+          <>
+            <Badge variant="cal">{etiquetaEstadoSeparacion(s.estado)}</Badge>
+            <Badge variant="outlineCal">
+              {s.codigoUnidad === null ? 'Sin unidad asignada' : `Unidad ${s.codigoUnidad}`}
+            </Badge>
+          </>
+        }
+      />
 
-      <header className="mb-5 mt-3">
-        <p className="text-xs font-black uppercase tracking-wide text-suelo-500">
-          {etiquetaEstadoSeparacion(s.estado)}
-        </p>
-        <h1 className="mt-1 text-2xl font-black tracking-tight text-foreground">
-          {s.nombreCompleto ?? 'Persona sin nombre legible'}
-        </h1>
-        <p className="mt-1 text-sm text-suelo-700">
-          Registrada el {fechaHora(s.creadoEl)} ·{' '}
-          {s.codigoUnidad === null ? 'sin unidad asignada' : `unidad ${s.codigoUnidad}`}
-        </p>
-      </header>
-
+      <div className="mx-auto w-full max-w-3xl">
       <div className="space-y-5">
         <DatosDelDeposito separacion={s} />
 
@@ -152,7 +159,8 @@ export function FichaSeparacion() {
           consultando={constancia.isPending}
         />
       </div>
-    </div>
+      </div>
+    </>
   )
 }
 
@@ -164,7 +172,7 @@ function DatosDelDeposito({ separacion }: { separacion: SeparacionCompleta }) {
   const s = separacion
 
   return (
-    <Card className="border-cal-300 shadow-sm">
+    <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-base">El depósito</CardTitle>
       </CardHeader>
@@ -198,7 +206,7 @@ function DatosDelDeposito({ separacion }: { separacion: SeparacionCompleta }) {
         <Comprobante ruta={s.comprobanteRuta} />
 
         {s.notas !== null && (
-          <p className="rounded-md border border-cal-300 p-3 text-sm leading-snug text-suelo-700">
+          <p className="rounded-md border border-border p-3 text-sm leading-snug text-suelo-700">
             {s.notas}
           </p>
         )}
@@ -365,7 +373,7 @@ function Verificacion({ separacion }: { separacion: SeparacionCompleta }) {
 
   if (yaVerificada) {
     return (
-      <Card className="border-cal-300 shadow-sm">
+      <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Verificación</CardTitle>
         </CardHeader>
@@ -392,7 +400,7 @@ function Verificacion({ separacion }: { separacion: SeparacionCompleta }) {
   }
 
   return (
-    <Card className="border-cal-300 shadow-sm">
+    <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-base">Verificación</CardTitle>
       </CardHeader>
@@ -431,7 +439,7 @@ function Verificacion({ separacion }: { separacion: SeparacionCompleta }) {
             </Button>
           </div>
         ) : (
-          <p className="rounded-md border border-cal-300 bg-card p-3 text-sm leading-snug text-suelo-700">
+          <p className="rounded-md border border-border bg-card p-3 text-sm leading-snug text-suelo-700">
             Tu rol (<span className="font-bold">{rol ?? 'sin perfil'}</span>) no verifica
             separaciones. Solo <span className="font-bold">Dirección</span> puede hacerlo, y no es
             una decisión de esta pantalla: lo impone el disparador{' '}
@@ -481,7 +489,7 @@ function Constancia({
   const s = separacion
 
   return (
-    <Card className="border-cal-300 shadow-sm">
+    <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-base">Constancia</CardTitle>
       </CardHeader>
