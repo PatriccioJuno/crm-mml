@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { AlertTriangle, Loader2 } from 'lucide-react'
+import { AlertTriangle, ListEnd, Loader2 } from 'lucide-react'
 import { Badge } from '@/componentes/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/componentes/ui/card'
 import { cn } from '@/lib/utils'
@@ -40,6 +40,13 @@ type Props = {
   vacio: string
   /** Filas descartadas por ilegibles. Se avisa; no se esconden. */
   descartadas?: number
+  /**
+   * El `.limit()` de la consulta que alimenta el bloque. Si llegan EXACTAMENTE
+   * ese numero de filas, casi seguro hay mas en la base: el conteo pasa a
+   * «50+» y se avisa debajo. Sin esto, un bloque recortado se leeria como
+   * completo, que es la forma mas silenciosa de que la pantalla mienta.
+   */
+  limite?: number | undefined
   children: ReactNode
 }
 
@@ -52,10 +59,12 @@ export function BloqueHoy({
   error,
   vacio,
   descartadas = 0,
+  limite,
   children,
 }: Props) {
   const esAlerta = tono === 'alerta'
   const esAzul = tono === 'azul'
+  const enElLimite = limite !== undefined && conteo !== null && conteo >= limite
 
   return (
     <Card
@@ -105,7 +114,7 @@ export function BloqueHoy({
               tono === 'neutro' && 'border-transparent bg-secondary text-secondary-foreground',
             )}
           >
-            {conteo}
+            {enElLimite ? `${conteo}+` : conteo}
           </Badge>
         )}
       </CardHeader>
@@ -134,6 +143,14 @@ export function BloqueHoy({
 
         {!cargando && error === null && conteo !== null && conteo > 0 && (
           <ul className="divide-y divide-tinta-fila">{children}</ul>
+        )}
+
+        {!cargando && error === null && enElLimite && (
+          <p className="flex items-start gap-2 border-t border-tinta-fila px-4 py-2 sm:px-6 text-xs font-bold text-foreground">
+            <ListEnd className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden="true" />
+            Se muestran solo las primeras {limite}: puede haber más. Atiende estas primero o
+            búscalas en Personas.
+          </p>
         )}
 
         {descartadas > 0 && (

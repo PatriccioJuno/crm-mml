@@ -33,18 +33,53 @@ import type { Rol } from '@/auth/tipos-sesion'
 // ---------------------------------------------------------------------------
 
 /**
- * Texto literal del aviso que encabeza la pantalla. Se guarda aqui, y no
- * suelto en el JSX, porque es una afirmacion sobre el estado del negocio y
- * tiene fuente: si manana el plano aparece y las cifras se reconcilian, se
- * cambia en un sitio y se sabe cual.
+ * El aviso que encabeza la pantalla YA NO es un texto fijo.
  *
- * Fuente: D:\SCPCMO\00-fuente-de-verdad\inventario-maestro.md
- * (las 4 cifras en conflicto — 478 / 473 / 474 / 120 — estan citadas tambien
- * en el comentario de la tabla `unidades`, 01-schema.sql seccion 2).
+ * Hasta la migracion 14 decia «el inventario maestro esta bloqueado: falta el
+ * plano vigente y hay 4 cifras en conflicto». Con el plano vigente conciliado
+ * en 00-fuente-de-verdad\inventario-maestro.md y cargado con
+ * fn_importar_inventario, esa frase seria falsa. Pero tampoco se reemplaza por
+ * otra frase fija con el total: el total de unidades es una cifra de negocio y
+ * no puede vivir literal en el codigo (07-crm\CLAUDE.md §2). Por eso la
+ * pantalla CUENTA las filas que de verdad cargo (`resumirInventario`) y cita la
+ * fuente; si la tabla esta vacia, lo dice en rojo.
  */
-export const AVISO_INVENTARIO_BLOQUEADO =
-  'El inventario maestro está bloqueado: falta el plano vigente y hay 4 cifras en conflicto. ' +
-  'Solo se pueden ofrecer las unidades verificadas una por una.'
+
+/** Parametro con la fuente y la fecha de corte de la disponibilidad (sql/14 §3). */
+export const PARAMETRO_CORTE_DISPONIBILIDAD = 'inventario_disponibilidad_corte'
+
+/** Lo que se cuenta para el aviso. Solo filas leidas; nada tecleado a mano. */
+export type ResumenInventario = {
+  total: number
+  puestos: number
+  tiendas: number
+  /** Filas con un tipo que no es ni puesto ni tienda: se cuentan aparte, no se esconden. */
+  otros: number
+  sinUbicacion: number
+  porRevisar: number
+}
+
+export function resumirInventario(unidades: readonly Unidad[]): ResumenInventario {
+  let puestos = 0
+  let tiendas = 0
+  let sinUbicacion = 0
+  let porRevisar = 0
+  for (const u of unidades) {
+    const tipo = (u.tipo ?? '').toLowerCase()
+    if (tipo === 'puesto') puestos++
+    else if (tipo === 'tienda') tiendas++
+    if (u.geometria === null) sinUbicacion++
+    if (u.revisar !== null) porRevisar++
+  }
+  return {
+    total: unidades.length,
+    puestos,
+    tiendas,
+    otros: unidades.length - puestos - tiendas,
+    sinUbicacion,
+    porRevisar,
+  }
+}
 
 export const FUENTE_INVENTARIO = '00-fuente-de-verdad/inventario-maestro.md'
 
@@ -166,13 +201,54 @@ export type Unidad = {
   disponibleComercialmente: boolean | null
   tieneAsignacionActiva: boolean | null
   tieneSeparacionViva: boolean | null
+
+  // --- Desde sql/14-inventario-grafico.sql (null si la migracion no esta) ---
+  /** Poligono en el espacio 1050 × 2048 de public/plano/zonificacion.webp. null = sin ubicacion. */
+  geometria: Punto[] | null
+  /** Rubro de la zona tal como lo rotula el plano. Texto libre, no se normaliza aqui. */
+  zonaRubro: string | null
+  /** Aviso de revision (fuentes que no coinciden). Se muestra, no se corrige. */
+  revisar: string | null
+  /** De donde sale el estado comercial de la fila, con su fecha. */
+  fuenteDisponibilidad: string | null
 }
+
+/** Un vertice del poligono, en coordenadas de DIBUJO (pixeles), no metros. */
+export type Punto = readonly [number, number]
 
 const COLUMNAS_UNIDAD =
   'id, codigo_unidad, tipo, area_m2, etapa, bloque, ubicacion, estado_comercial, ' +
   'estado_dato, fuente_plano, precio_parametro, tipo_socio, estado_legal, observaciones, ' +
   'actualizado_el, ofrecible, verificada_contra_plano, disponible_comercialmente, ' +
   'tiene_asignacion_activa, tiene_separacion_viva'
+
+/**
+ * Las cuatro columnas que anade sql/14 al FINAL de v_unidades_tablero. Van
+ * aparte porque la pantalla tiene que seguir funcionando si el codigo se
+ * publica antes de aplicar la migracion: en ese caso se relee sin ellas y el
+ * plano dice que no hay geometria, en vez de romper la pantalla entera.
+ */
+const COLUMNAS_PLANO = 'geometria, zona_rubro, revisar, fuente_disponibilidad'
+
+/**
+ * Lee `geometria` sin fiarse de ella. Un poligono necesita al menos tres
+ * vertices numericos; cualquier otra forma se trata como «sin ubicacion en
+ * plano» — preferimos listar la unidad aparte a dibujarla en un sitio
+ * inventado.
+ */
+function leerGeometria(valor: unknown): Punto[] | null {
+  if (!Array.isArray(valor) || valor.length < 3) return null
+  const puntos: Punto[] = []
+  for (const v of valor as unknown[]) {
+    if (!Array.isArray(v) || v.length < 2) return null
+    const x: unknown = v[0]
+    const y: unknown = v[1]
+    if (typeof x !== 'number' || typeof y !== 'number') return null
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return null
+    puntos.push([x, y])
+  }
+  return puntos
+}
 
 function interpretarUnidad(fila: unknown): Unidad | null {
   if (typeof fila !== 'object' || fila === null) return null
@@ -206,6 +282,10 @@ function interpretarUnidad(fila: unknown): Unidad | null {
     disponibleComercialmente: booleano(f['disponible_comercialmente']),
     tieneAsignacionActiva: booleano(f['tiene_asignacion_activa']),
     tieneSeparacionViva: booleano(f['tiene_separacion_viva']),
+    geometria: leerGeometria(f['geometria']),
+    zonaRubro: texto(f['zona_rubro']),
+    revisar: texto(f['revisar']),
+    fuenteDisponibilidad: texto(f['fuente_disponibilidad']),
   }
 }
 
@@ -290,15 +370,143 @@ function mensajeDeError(mensaje: string): string {
   return mensaje
 }
 
-export async function cargarUnidades(): Promise<Lote<Unidad>> {
-  const { data, error } = await supabase
+/** El lote, mas si la base ya tiene las columnas del plano (sql/14). */
+export type LoteInventario = Lote<Unidad> & { conPlano: boolean }
+
+/** Postgres 42703 = columna inexistente: la migracion 14 no esta aplicada. */
+function faltaColumna(error: { code?: string; message: string }): boolean {
+  return error.code === '42703' || /column .* does not exist/i.test(error.message)
+}
+
+export async function cargarUnidades(): Promise<LoteInventario> {
+  const completa = await supabase
+    .from('v_unidades_tablero')
+    .select(`${COLUMNAS_UNIDAD}, ${COLUMNAS_PLANO}`)
+    .order('codigo_unidad', { ascending: true })
+    .limit(LIMITE_UNIDADES)
+
+  if (completa.error === null) {
+    return { ...leerLote(completa.data, interpretarUnidad), conPlano: true }
+  }
+  if (!faltaColumna(completa.error)) throw new Error(mensajeDeError(completa.error.message))
+
+  const basica = await supabase
     .from('v_unidades_tablero')
     .select(COLUMNAS_UNIDAD)
     .order('codigo_unidad', { ascending: true })
     .limit(LIMITE_UNIDADES)
 
-  if (error !== null) throw new Error(mensajeDeError(error.message))
-  return leerLote(data, interpretarUnidad)
+  if (basica.error !== null) throw new Error(mensajeDeError(basica.error.message))
+  return { ...leerLote(basica.data, interpretarUnidad), conPlano: false }
+}
+
+// ---------------------------------------------------------------------------
+// Titulares — solo el nombre, y solo si RLS deja verlo
+// ---------------------------------------------------------------------------
+
+/**
+ * `v_unidades_tablero` no lleva datos personales a proposito (comentario de la
+ * vista en sql/14). El nombre del titular se pide APARTE, a la tabla
+ * `unidades` con la persona embebida por su clave foranea, y solo el nombre:
+ * ni DNI ni telefono, que el plano no necesita (Ley 29733, minimo necesario;
+ * 07-crm\CLAUDE.md §5).
+ *
+ * Si RLS no deja ver a la persona, PostgREST devuelve el embebido en null y la
+ * unidad sale «sin titular visible». Si la consulta entera falla, el plano
+ * sigue funcionando sin nombres: el error se devuelve para decirlo, no para
+ * tumbar la pantalla.
+ */
+export type Titulares = { nombres: ReadonlyMap<string, string>; error: string | null }
+
+function nombreEmbebido(valor: unknown): string | null {
+  // PostgREST puede devolver el embebido como objeto o, segun como infiera la
+  // relacion, como arreglo de uno. Se aceptan las dos formas.
+  const persona: unknown = Array.isArray(valor) ? (valor as unknown[])[0] : valor
+  if (typeof persona !== 'object' || persona === null) return null
+  return texto((persona as Record<string, unknown>)['nombre_completo'])
+}
+
+export async function cargarTitulares(): Promise<Titulares> {
+  const { data, error } = await supabase
+    .from('unidades')
+    .select('id, titular_persona_id, personas!unidades_titular_fk(nombre_completo)')
+    .not('titular_persona_id', 'is', null)
+    .limit(LIMITE_UNIDADES)
+
+  if (error !== null) return { nombres: new Map(), error: mensajeDeError(error.message) }
+
+  const nombres = new Map<string, string>()
+  if (Array.isArray(data)) {
+    for (const fila of data as unknown[]) {
+      if (typeof fila !== 'object' || fila === null) continue
+      const f = fila as Record<string, unknown>
+      const id = texto(f['id'])
+      const nombre = nombreEmbebido(f['personas'])
+      if (id !== null && nombre !== null) nombres.set(id, nombre)
+    }
+  }
+  return { nombres, error: null }
+}
+
+// ---------------------------------------------------------------------------
+// Filtros del plano y de la lista (los mismos para los tres modos)
+// ---------------------------------------------------------------------------
+
+export type FiltrosInventario = {
+  busqueda: string
+  /** '' = todos. Un valor de `estado_unidad`. */
+  estado: string
+  /** '' = todos. */
+  tipo: string
+  /** '' = todos. SIN_RUBRO = las que no tienen rubro. */
+  rubro: string
+  soloPorRevisar: boolean
+}
+
+export const SIN_RUBRO = '__sin_rubro__'
+
+export const FILTROS_VACIOS: FiltrosInventario = {
+  busqueda: '',
+  estado: '',
+  tipo: '',
+  rubro: '',
+  soloPorRevisar: false,
+}
+
+/** Minusculas y sin tildes: «Pérez» se encuentra escribiendo «perez». */
+function normalizar(valor: string): string {
+  return valor.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+}
+
+/** Busca por codigo o por titular (el nombre que se pudo leer, si se pudo). */
+export function coincideConFiltros(
+  u: Unidad,
+  filtros: FiltrosInventario,
+  titular: string | null,
+): boolean {
+  const q = normalizar(filtros.busqueda.trim())
+  if (q !== '' && !normalizar(`${u.codigoUnidad} ${titular ?? ''}`).includes(q)) return false
+  if (filtros.estado !== '' && u.estadoComercial !== filtros.estado) return false
+  if (filtros.tipo !== '' && (u.tipo ?? '') !== filtros.tipo) return false
+  if (filtros.rubro === SIN_RUBRO && u.zonaRubro !== null) return false
+  if (filtros.rubro !== '' && filtros.rubro !== SIN_RUBRO && u.zonaRubro !== filtros.rubro) {
+    return false
+  }
+  if (filtros.soloPorRevisar && u.revisar === null) return false
+  return true
+}
+
+/** Valores distintos de un campo, ordenados, para los desplegables. */
+export function valoresDistintos(
+  unidades: readonly Unidad[],
+  campo: (u: Unidad) => string | null,
+): string[] {
+  const vistos = new Set<string>()
+  for (const u of unidades) {
+    const v = campo(u)
+    if (v !== null) vistos.add(v)
+  }
+  return [...vistos].sort((a, b) => a.localeCompare(b, 'es'))
 }
 
 // ---------------------------------------------------------------------------

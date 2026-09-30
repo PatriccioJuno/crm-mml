@@ -2,7 +2,7 @@
 
 **Estado:** 🟡 El archivo está escrito y su sintaxis validada; el resultado
 contra un proyecto real todavía no está anotado. Ver §7.
-**Qué se prueba:** `pruebas/reglas.sql`
+**Qué se prueba:** `pruebas/reglas.sql` (y, desde 13, `pruebas/reglas-13.sql`: ver §9)
 **Cuánto tarda:** menos de un minuto.
 
 ---
@@ -212,3 +212,68 @@ Para que nadie las lea como más de lo que son:
 - **Los plazos reales.** `R4b` usa un plazo de juguete (3 días) solo para
   comprobar que los dos relojes se mueven por separado. El plazo de verdad
   sigue 🔴 en `parametros`, y esta prueba no lo carga ni lo sugiere.
+
+---
+
+## 9. Pruebas de 13 (`pruebas/reglas-13.sql`)
+
+**Estado:** 🟡 **30 de 30 pasan en un ensayo LOCAL** (PGlite, 30/09/2026), con la base
+vacía y con una copia simulada de la base viva. Contra el proyecto real de Supabase
+**todavía no se ha corrido**: hasta anotarlo en §7 no se declara nada VALIDADO.
+
+**Qué cubre:** lo que pide SPEC §4.8 (secciones 1–8 del archivo: alta sin duplicar,
+lotes, fríos, 01→02 con motivo, «no contactar», R5/R7 por el perfil, visitas, RLS del
+perfil y de la bandeja, «tomar» gana el primero, R8, `anon` sin EXECUTE, contrato de
+`v_cartera`) y un **§9 de humo**: cada RPC que la ficha llama y que 1–8 no tocaban
+(aviso de visita, confirmar/realizada, enfriar/reactivar/descartar, temperatura a mano,
+asignar, equipo, campaña, documento + storage) se ejecuta al menos una vez. Un cuerpo
+plpgsql solo se valida de verdad al correr: una columna mal escrita compila igual.
+
+**En Supabase:** después de aplicar 13, SQL Editor → pegar `reglas-13.sql` entero → Run.
+Necesita un perfil activo de cada rol operativo (si falta uno, la fila PRE sale 🟡).
+Todo va entre `begin … rollback`. Lo esperado: la fila 9999 dice
+`30 pasan · 0 fallan · 0 omitidas`.
+
+### 9.1 Ensayo local, sin tocar la base viva (arnés PGlite)
+
+PGlite es PostgreSQL real compilado a WASM que corre dentro de Node: se levanta en
+memoria, se le cargan los SQL del repo y se tira al terminar. Nada sale de la máquina.
+
+- **Dónde está:** en el scratchpad de la sesión que lo armó
+  (`…\scratchpad\pglite\`: `harness.mjs`, `contrato.mjs`, `consulta.mjs`). No está
+  versionado. 🔵 Propuesta: moverlo a `pruebas/local/` si se va a usar en cada entrega.
+- **Cómo se corre:** `npm install @electric-sql/pglite` en esa carpeta, y luego
+  `node harness.mjs pruebas` (migraciones + `reglas-13.sql`), `node harness.mjs contrato`
+  (contrato frontend ↔ base) o `node harness.mjs todo`. Con `SEMBRAR_VIVO=1` imita la base
+  viva antes de 13 (1 persona, su oportunidad `perdida` con historial y un valor de
+  `cal_operar_o_invertir` fuera de lista, que debe dejar el CHECK en NOT VALID sin romper).
+- **Qué hace, en orden:** stubs de Supabase (roles `anon`/`authenticated`/`service_role`,
+  `auth.users` + `auth.uid()`, `storage.buckets`/`storage.objects` con RLS, privilegios por
+  defecto de `public`) → 01..12 sin 05 → 4 perfiles de prueba (uno por rol, vía
+  `auth.users` y el trigger de alta) → 13 → **13 otra vez**, comparando una huella del
+  catálogo (funciones y sus permisos, vistas, columnas, políticas, triggers, CHECKs,
+  índices, parámetros, buckets): debe salir «sin cambios» → 14 → `reglas-13.sql` → contrato.
+- **El contrato:** lee `src/` y `supabase/functions/`, y para cada `rpc('fn', {…})` /
+  `llamarRpc('fn', {…})` comprueba que la función exista con esos nombres de argumento,
+  que no falte uno obligatorio y que `authenticated` pueda ejecutarla; para cada
+  `.from('x')`, que existan la tabla o vista, las columnas del `select` (también las
+  constantes `COLUMNAS_*` y los recursos embebidos, con su FK), las de los filtros y las
+  de `insert`/`update`, y que `authenticated` tenga el permiso.
+
+### 9.2 Lo que el ensayo local NO demuestra
+
+- **Superusuario.** En PGlite `postgres` es superusuario; en Supabase no lo es, pero tiene
+  BYPASSRLS. Para las funciones SECURITY DEFINER y FORCE RLS el efecto es el mismo; las
+  pruebas de RLS cambian a `set local role authenticated`, que sí se comporta igual.
+- **Versión.** PGlite trae PostgreSQL 18.3; la base viva, 17.6.
+- **Auth y Storage son maquetas.** Se prueban sus políticas en SQL, no GoTrue ni la API de
+  Storage (subida real, límite de 10 MB, tipos MIME).
+- **Sin PostgREST.** El contrato se verifica contra el catálogo, no con llamadas HTTP: no
+  detecta, por ejemplo, un embebido ambiguo por dos FK hacia la misma tabla.
+- **Datos reales.** La copia simulada imita lo que `analisis/sql.md` vio en vivo; si la
+  base cambió desde entonces, el ensayo no lo sabe.
+
+| Fecha | Dónde | Resultado |
+|---|---|---|
+| 30/09/2026 | PGlite local (vacía y con copia simulada) | 30 pasan · 0 fallan · 0 omitidas; 13 dos veces sin cambios; contrato sin desajustes |
+| — | Supabase (proyecto real) | [PENDIENTE] |

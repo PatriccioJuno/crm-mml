@@ -120,6 +120,10 @@ export function PantallaEmbudo() {
       // traer lo que hayan cambiado los disparadores; tras un fallo, para no
       // quedarse con una foto reconstruida a mano.
       void cliente.invalidateQueries({ queryKey: CLAVE })
+      // El estado tambien se ve en Personas, en la ficha y en Hoy (SPEC §8).
+      void cliente.invalidateQueries({ queryKey: ['cartera'] })
+      void cliente.invalidateQueries({ queryKey: ['ficha'] })
+      void cliente.invalidateQueries({ queryKey: ['hoy'] })
     },
   })
 
@@ -290,7 +294,7 @@ function Advertencias({
       )}
 
       <p className={cn('text-xs text-suelo-500', recargando && 'animate-pulse')}>
-        Las tarjetas salen de <code>v_embudo_tarjetas</code>. Mover una tarjeta solo cambia{' '}
+        Las tarjetas salen de <code>v_cartera</code>. Mover una tarjeta solo cambia{' '}
         <code>oportunidades.estado</code>: el historial lo escribe el disparador{' '}
         <code>t_oportunidad_historial</code> (R9).
         {recargando && ' · actualizando…'}

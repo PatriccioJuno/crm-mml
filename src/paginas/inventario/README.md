@@ -1,16 +1,22 @@
 # Pantalla: inventario (`/inventario`)
 
-🟢 Escrita · 10 de septiembre de 2026
+🟢 Escrita · 10 de septiembre de 2026 · 🟡 plano interactivo añadido el 30 de septiembre de 2026
+(pendiente de probar con los datos cargados)
 
-La tabla de unidades con sus dos semáforos, y la defensa visible contra la doble asignación.
+El plano del mercado y la tabla de unidades con sus dos semáforos: la defensa visible contra la
+doble asignación.
 
 ## Archivos
 
 | Archivo | Qué es |
 |---|---|
-| `index.tsx` | la pantalla: aviso permanente, leyenda, tabla y selección |
+| `index.tsx` | la pantalla: aviso calculado, modos Disponibilidad / Zonificación / Lista, filtros, ficha de la unidad elegida |
+| `PlanoInventario.tsx` | el visor SVG, portado de `D:/SCPCMO/02-marketing/diseño/inventario grafico/public/app.js` |
+| `ImportarInventario.tsx` | la carga inicial (CSV del cuadro de áreas + `seed.json`) — solo con la tabla vacía y para `direccion` / `administracion` |
 | `FormularioUnidad.tsx` | alta y edición — solo se dibuja para `direccion` y `administracion` |
-| `../../lib/inventario.ts` | los dos semáforos, la consulta, los motivos del bloqueo y el guardado |
+| `../../lib/inventario.ts` | los dos semáforos, la consulta, los motivos del bloqueo, los filtros, los titulares y el guardado |
+| `../../../public/plano/` | `zonificacion.webp` (sobre la que se trazó la geometría) y `disponibilidad.webp` (referencia de origen) |
+| `../../../sql/14-inventario-grafico.sql` | `geometria`, `zona_rubro`, `revisar`, `fuente_disponibilidad` y el parámetro `inventario_disponibilidad_corte` |
 | `../../../sql/08-vistas-embudo-e-inventario.sql` | la vista `v_unidades_tablero` y la restricción `verde_exige_plano` — **hay que ejecutarlas en Supabase** |
 
 ## Quién decide qué se puede ofrecer
@@ -61,8 +67,31 @@ lo comprueba, pero solo para ahorrar el viaje.
 
 La leyenda está impresa en la pantalla, no solo aquí.
 
+## El aviso de arriba se calcula
+
+Ya no es un texto fijo. Con filas: 🟢 «Plano vigente cargado: N unidades (P puestos · T tiendas)»,
+**contado de las filas leídas** y con la fuente `00-fuente-de-verdad/inventario-maestro.md`; y 🟡
+de qué lista y fecha sale la disponibilidad, leído del parámetro `inventario_disponibilidad_corte`
+(`[PENDIENTE]` si está vacío). Sin filas: 🔴 «El inventario todavía no está cargado en el CRM».
+Ninguna cifra ni fecha está escrita en el código.
+
+## El plano
+
+- `viewBox` `85 75 900 1850` sobre la imagen de 1050 × 2048, igual que el visor original, para que
+  los polígonos de `unidades.geometria` caigan donde se trazaron. `geometria` nula = la unidad sale
+  en «Sin ubicación en plano», nunca dibujada en un sitio inventado.
+- **Colores de marca, no los del visor original.** El plano vive dentro de una superficie
+  `bg-azul` (el único sitio donde el ámbar es legal) y cada estado se lee también **sin color**:
+  relleno liso o trama distinta, borde discontinuo = por revisar, rayado fino = dato no verificado,
+  y leyenda con palabras. En Zonificación, color + trama por rubro; el nombre del rubro es el dato.
+- Titular: solo el **nombre**, pedido aparte a `unidades` con `personas` embebida por
+  `unidades_titular_fk`. Si RLS no deja verlo, sale «sin titular visible»; si la consulta falla, el
+  plano funciona sin nombres. `v_unidades_tablero` sigue sin datos personales.
+- Si el código se publica antes de aplicar `sql/14`, la pantalla relee sin las columnas nuevas y lo
+  dice (🟡), en vez de romperse.
+
 ## Lo que todavía no hace
 
-Seleccionar una unidad ofrecible marca la selección y lo dice, pero **asignarla a una
-oportunidad** se hará desde la ficha de la persona, que sigue 🔴 pendiente. No hay ningún botón
-que aparente funcionar sin hacerlo.
+Elegir una unidad (en el plano, en la lista o en «sin ubicación») abre su ficha con el botón de
+editar, pero **no la asigna**: la separación se registra desde Separaciones, cuyo selector solo
+ofrece unidades de `v_unidades_ofrecibles`. No hay ningún botón que aparente asignar desde aquí.

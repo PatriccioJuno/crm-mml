@@ -1,3 +1,4 @@
+import { esTemperatura, type Temperatura } from '@/lib/cartera'
 import { supabase } from '@/lib/supabase'
 import { booleano, entero, leerLote, texto, type Lote } from '@/lib/lectura'
 import { ORIGENES } from '@/lib/registro-rapido'
@@ -153,12 +154,28 @@ export type Tarjeta = {
   diasSinContacto: number | null
   cualificacionCompleta: boolean | null
   tieneTareaAbierta: boolean | null
+  /**
+   * La temperatura que calcula `v_cartera` (fn_temperatura con los umbrales 🔵
+   * de `parametros`, o la manual si alguien la fijo). `null` si llega un valor
+   * que este cliente no conoce: la tarjeta se pinta igual, sin insignia, en vez
+   * de descartarse o de inventarle una temperatura.
+   */
+  temperatura: Temperatura | null
+  temperaturaMotivo: string | null
 }
 
+/**
+ * Las mismas columnas que leia de `v_embudo_tarjetas`, mas la temperatura.
+ * Desde la entrega 13 (30/09/2026) el tablero lee `v_cartera`, que tiene esas
+ * columnas con el mismo nombre y la misma formula de `dias_sin_contacto`
+ * (SPEC §4.6): asi el tablero, la cartera y la ficha dicen la misma
+ * temperatura, en vez de tres vistas calculandola cada una a su manera.
+ */
 const COLUMNAS_TARJETA =
   'id, persona_id, nombre_completo, telefono_e164, origen, estado, situacion, ' +
   'lanzamiento, responsable_id, responsable_nombre, fecha_ultimo_contacto, ' +
-  'dias_sin_contacto, cualificacion_completa, tiene_tarea_abierta'
+  'dias_sin_contacto, cualificacion_completa, tiene_tarea_abierta, ' +
+  'temperatura, temperatura_motivo'
 
 function interpretarTarjeta(fila: unknown): Tarjeta | null {
   if (typeof fila !== 'object' || fila === null) return null
@@ -187,6 +204,8 @@ function interpretarTarjeta(fila: unknown): Tarjeta | null {
     diasSinContacto: entero(f['dias_sin_contacto']),
     cualificacionCompleta: booleano(f['cualificacion_completa']),
     tieneTareaAbierta: booleano(f['tiene_tarea_abierta']),
+    temperatura: esTemperatura(f['temperatura']) ? f['temperatura'] : null,
+    temperaturaMotivo: texto(f['temperatura_motivo']),
   }
 }
 
@@ -198,10 +217,10 @@ function interpretarTarjeta(fila: unknown): Tarjeta | null {
  * lo que de verdad paso.
  */
 function mensajeDeError(mensaje: string): string {
-  if (mensaje.includes('v_embudo_tarjetas')) {
+  if (mensaje.includes('v_cartera')) {
     return (
-      'Falta ejecutar 02-codigo\\sql\\08-vistas-embudo-e-inventario.sql en Supabase. ' +
-      'Sin esa vista el tablero no tiene de donde leer.'
+      'Falta ejecutar 02-codigo\\sql\\13-seguimiento-comercial.sql en Supabase. ' +
+      'Sin la vista v_cartera el tablero no tiene de donde leer.'
     )
   }
   if (mensaje.includes('calificado_requiere_las_4_respuestas')) {
@@ -244,7 +263,7 @@ function mensajeDeError(mensaje: string): string {
  */
 export async function cargarTarjetas(): Promise<Lote<Tarjeta>> {
   const { data, error } = await supabase
-    .from('v_embudo_tarjetas')
+    .from('v_cartera')
     .select(COLUMNAS_TARJETA)
     .eq('situacion', 'activa')
     // Lo mas frio primero: dentro de cada columna, arriba lo que lleva mas

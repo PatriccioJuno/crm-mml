@@ -249,8 +249,9 @@ export function FormularioSeparacion() {
 
             {unidades.data !== undefined && unidades.data.filas.length === 0 && (
               <p className="rounded-md bg-alerta-suave p-2 text-xs font-bold leading-snug text-alerta">
-                🔴 No hay ninguna unidad ofrecible. El inventario maestro sigue bloqueado: cada
-                unidad se verifica una por una contra el plano antes de poder ofrecerse.
+                🔴 No hay ninguna unidad ofrecible ahora mismo: solo se ofrecen las que están
+                disponibles, verificadas contra el plano y sin asignación ni separación viva.
+                Revisa el inventario.
               </p>
             )}
 

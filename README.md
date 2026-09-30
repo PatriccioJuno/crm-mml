@@ -3,16 +3,16 @@
 Aplicación web de una sola página. CRM operativo de **SCP Inmobiliaria** para el proyecto
 **Mercado Media Luna (MML)**.
 
-**Estado: 🟡 en construcción.** De las 8 pantallas del MVP-1 hay **5 escritas** — Hoy, Registro
-rápido, Embudo, Inventario y Separaciones. Las otras tres (Persona, Cobranza, Reportes) siguen
-🔴 pendientes y resuelven al marcador de posición.
+**Estado: 🟡 en construcción · 30/09/2026.** Las **10 secciones del menú están escritas** — Hoy,
+Personas, Registro rápido, Embudo, Inventario, Separaciones, Contratos, Cobranza, Reportes y
+Parámetros —, más la **ficha de persona** (`/personas/:personaId`) y el **Modo llamadas**
+(`/cola`). La entrega 13 (seguimiento comercial: cartera, temperatura, fríos, visitas, documentos
+y bandeja web) está escrita y pasa `tsc`, pero **no se ha probado en un navegador** y depende de
+`sql/13` y `sql/14`, que siguen 🟡 por aplicar (ver *Base de datos*).
 
-> **Antes de abrir Embudo o Inventario** hay que ejecutar en Supabase, por orden,
-> `../sql/07-vistas-hoy.sql` y `../sql/08-vistas-embudo-e-inventario.sql`. Sin sus vistas las dos
-> pantallas no tienen de dónde leer, y lo dicen con ese mismo mensaje en lugar de salir vacías.
->
-> **Antes de abrir Separaciones**, además, `../sql/09-separaciones-storage.sql`: crea el bucket
-> privado `comprobantes` donde se sube el voucher del depósito.
+> **Antes de abrir cualquier pantalla** hay que tener aplicadas en Supabase, por orden, las
+> migraciones de `sql/` (tabla de abajo). Sin sus vistas las pantallas no tienen de dónde leer, y
+> lo dicen con un mensaje que nombra el archivo que falta en lugar de salir vacías.
 
 Las reglas del proyecto están en [`../../CLAUDE.md`](../../CLAUDE.md) y mandan sobre este
 archivo.
@@ -48,9 +48,15 @@ Reference ID* — es también el subdominio de la URL del proyecto
 (`https://<project-id>.supabase.co`) y de la del panel
 (`https://supabase.com/dashboard/project/<project-id>`).
 
-🔴 **Todavía sin ejecutar:** `npm run tipos` falla con
+🔴 **Todavía sin ejecutar (30/09/2026):** `npm run tipos` falla con
 `LegacyPlatformAuthRequiredError` mientras no se haya hecho `supabase login`. Hasta entonces
 `src/lib/tipos.ts` sigue vacío a propósito y el cliente queda sin tipar por esquema.
+
+Mientras tanto, **toda fila que llega de la base es `unknown`** y pasa por un lector de frontera
+(`src/lib/lectura.ts`: `texto`, `entero`, `booleano`, `monto`, `leerLote`) que la comprueba y la
+descarta —contándola— si no cumple. Eso incluye todo lo nuevo de la entrega 13 (`v_cartera`,
+`visitas`, `documentos`, `oportunidad_perfil`, `fn_bandeja`…). Cuando se generen los tipos, hay
+que regenerarlos **después** de aplicar `sql/13` y `sql/14`, o saldrán sin esas tablas.
 
 ---
 
@@ -60,25 +66,85 @@ Reference ID* — es también el subdominio de la URL del proyecto
 src/
   lib/supabase.ts        cliente único de Supabase (solo clave anon)
   lib/tipos.ts           tipos GENERADOS desde la base — vacío a propósito
-  lib/fechas.ts          formateo en español y "vence en N días" (date-fns)
+  lib/fechas.ts          formateo en español, "vence en N días", datetime-local ⇄ ISO
   lib/lectura.ts         lectores de frontera: lo que llega de la base se comprueba
+  lib/acciones.ts        ResultadoAccion<T> y llamarRpc: cómo vuelve cada escritura
   lib/embudo.ts          los 10 estados, el umbral de días y mover una oportunidad
+  lib/cartera.ts         v_cartera: temperatura, fríos, descartes, conteos (entrega 13)
+  lib/contacto.ts        registrar un contacto y la cadencia de seguimiento (entrega 13)
+  lib/perfil.ts          perfil comercial del prospecto y cualificación R5 (entrega 13)
+  lib/visitas.ts         agendar / confirmar / cerrar visitas y sus avisos (entrega 13)
+  lib/aviso-visita.ts    el texto del aviso de visita (copiado tal cual en la Edge Function)
+  lib/plantillas.ts      mensajes de WhatsApp sin promesas prohibidas (entrega 13)
+  lib/whatsapp.ts        enlace whatsapp:// (sin wa.me) y copiar como respaldo
+  lib/documentos.ts      checklist por estado y bucket privado `documentos` (entrega 13)
+  lib/lote.ts            registrar prospectos: uno a uno, la lista del live o el mensaje de la web
+  lib/hoy.ts             bloques de Hoy, topes y la llamada a «Modo llamadas»
   lib/inventario.ts      los dos semáforos, y por qué una unidad no se puede ofrecer
+  lib/importar-inventario.ts  carga inicial: plano vigente + inventario gráfico (sql/14)
   lib/parametros.ts      el único sitio donde puede vivir una cifra; PENDIENTE si está en rojo
   lib/separaciones.ts    el S/500, los dos relojes como campos distintos (R4) y el voucher
   lib/utils.ts           cn() para shadcn/ui
   auth/ContextoSesion    usuario + perfil + rol, y entrar()/salir()
   auth/RutaProtegida     envoltorio de cada ruta
-  auth/secciones.ts      qué secciones ve cada rol (copiado de RLS)
+  auth/secciones.ts      qué secciones ve cada rol (copiado de RLS) y su orden en el menú
   auth/tipos-sesion.ts   contrato mínimo de `perfiles` + lector en runtime
   componentes/ui/        shadcn/ui — no escribir a mano, traer con `npx shadcn add`
+  componentes/crm/       piezas del CRM: InsigniaTemperatura, BotonesContacto, GrupoChips…
+  componentes/marca/     CabeceraPantalla y superficies azules
   componentes/layout/    cascarón, barra lateral
   paginas/entrar/        pantalla de inicio de sesión
-  paginas/<pantalla>/    una carpeta por pantalla (las 8 del MVP-1; 5 escritas,
-                         cada una con su README explicando lo que decide)
+  paginas/<pantalla>/    una carpeta por pantalla, cada una con su README
   hooks/                 hooks de datos (TanStack Query)
   rutas.tsx              mapa de rutas
+supabase/functions/aviso-visita/   Edge Function del correo de visita (inerte sin secretos)
+sql/                     migraciones, en orden (ver Base de datos)
+pruebas/                 baterías de reglas: reglas.sql, reglas-13.sql, COMO-PROBAR.md
 ```
+
+### Pantallas
+
+Orden del menú (`src/auth/secciones.ts`): Hoy · Personas · Registro rápido · Embudo · Inventario ·
+Separaciones · Contratos · Cobranza · Reportes · Parámetros.
+
+| Ruta | Pantalla | Quién la ve |
+|---|---|---|
+| `/hoy` | `PantallaHoy` — urgencias, visitas de hoy y mañana, «N leads nuevos → Modo llamadas», bandeja web | los cinco roles |
+| `/personas` | `PantallaPersonas` — Cartera · Fríos · Descartados · Bandeja web (`?tab=`) | los cinco roles |
+| `/personas/:personaId` | `FichaPersona` — contacto, perfil, visitas, documentos, actividad (`?o=` elige la oportunidad) | filtro de `personas` |
+| `/registro-rapido` | `PantallaRegistroRapido` — uno a uno · pegar lista · mensaje de la web | `direccion`, `comercial`, `administracion` |
+| `/cola` | `PantallaCola` — Modo llamadas (`?vista=nuevos \| pendientes \| seleccion \| campana`) | filtro de `registro-rapido` |
+| `/embudo` | `PantallaEmbudo` — los 10 estados, con temperatura y enlace a la ficha | los cinco roles |
+| `/inventario` · `/separaciones` · `/contratos` · `/cobranza` · `/reportes` · `/parametros` | ver el README de cada carpeta | ver `secciones.ts` |
+
+---
+
+## Base de datos
+
+Las migraciones viven en `sql/` y se ejecutan **por orden**. Cada una anota su fila en
+`migraciones_aplicadas` (desde `10-migraciones.sql`).
+
+| Archivo | Qué añade | Estado |
+|---|---|---|
+| `01` … `12` | esquema, RLS, vistas, parámetros, registro rápido, Hoy, embudo e inventario, storage de comprobantes, migraciones, privilegios, captación | aplicadas en el proyecto (SPEC, 29/09/2026) |
+| `13-seguimiento-comercial.sql` | `v_cartera`, temperatura (`fn_temperatura`), fríos y descartes, perfil comercial, visitas y sus avisos, documentos (+ bucket privado `documentos`), bandeja web (`fn_bandeja`), umbrales 🔵 en `parametros` | 🟡 **por aplicar** — ensayado con `pruebas/reglas-13.sql` dentro de una transacción abortada |
+| `14-inventario-grafico.sql` | cuatro columnas del plano interactivo en `unidades` y `v_unidades_tablero` (la carga de datos va aparte, por Ley 29733) | 🟡 **por aplicar** |
+
+Sin `sql/13`, Personas, la ficha, el Modo llamadas, el bloque de visitas de Hoy y el Embudo (que
+ahora lee `v_cartera`) fallan con un mensaje que lo dice.
+
+Los umbrales de temperatura y fríos se siembran con valores **🔵 PROPUESTA** y
+`estado_semaforo='azul'`; Walter los ratifica desde Parámetros. Ninguno es una cifra comercial.
+
+### Edge Function `supabase/functions/aviso-visita`
+
+Correo automático del aviso de visita (confirmación · recordatorio · cancelación) por Resend, con
+la invitación `.ics`. **🔵 Escrita, no desplegada.** Desplegada sin los secretos
+`RESEND_API_KEY` y `CORREO_REMITENTE` queda **inerte**: responde `configurado:false` y la ficha
+esconde «Enviar automático». Mientras tanto funciona el camino manual (`mailto:` + `.ics`
+descargable + texto de WhatsApp). Despliegue, activación y seguridad: su propio
+[`README.md`](supabase/functions/aviso-visita/README.md). `aviso-visita.ts` de esa carpeta es una
+copia byte a byte de `src/lib/aviso-visita.ts` y no se edita allí.
 
 ## Stack
 
@@ -138,12 +204,13 @@ Si el perfil tiene `activo = false`, el contexto **cierra la sesión** y `/entra
 
 Ocultar un enlace no protege nada: la ruta se puede escribir a mano y `supabase-js` se puede
 llamar desde la consola del navegador. **Lo único que protege los datos es RLS**
-(`../sql/02-rls.sql`), evaluado en el servidor con `auth.uid()`.
+(`sql/02-rls.sql`), evaluado en el servidor con `auth.uid()`.
 
 Por eso `src/auth/secciones.ts` no *define* permisos: los **copia** de RLS, y cada sección cita
 la política de la que sale. Si RLS cambia, esto se actualiza detrás — nunca al revés. Con las
 políticas actuales los cinco roles pueden **leer** casi todo, así que hoy el menú solo esconde
-*Registro rápido* a `contabilidad` y `lectura` (no tienen `INSERT` en `personas`).
+*Registro rápido* a `contabilidad` y `lectura` (no tienen `INSERT` en `personas`), y con él el
+*Modo llamadas* (`/cola`), que cuelga del mismo filtro.
 
 ---
 

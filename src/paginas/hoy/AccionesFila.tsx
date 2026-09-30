@@ -12,6 +12,7 @@ import {
 } from '@/componentes/ui/dialog'
 import { Input, claseCampo } from '@/componentes/ui/input'
 import { Label } from '@/componentes/ui/label'
+import { aEntradaLocal, sumarDias } from '@/lib/fechas'
 import { cn } from '@/lib/utils'
 import { useSesion } from '@/auth/ContextoSesion'
 import { CANALES, crearTarea, registrarInteraccion, type Canal } from '@/lib/hoy'
@@ -92,7 +93,15 @@ export function AccionesFila({
         </Button>
       ) : (
         <Button variant="ghost" size="sm" asChild title="Abrir la ficha">
-          <Link to={`/personas/${objetivo.personaId}`}>
+          {/* `?o=` abre la ficha en ESTA oportunidad cuando la persona tiene
+              varias; sin el, la ficha elige la principal por su cuenta. */}
+          <Link
+            to={
+              objetivo.oportunidadId === null
+                ? `/personas/${objetivo.personaId}`
+                : `/personas/${objetivo.personaId}?o=${objetivo.oportunidadId}`
+            }
+          >
             <FileText strokeWidth={1.75} aria-hidden="true" />
             <span className="sr-only">Abrir ficha de {objetivo.nombre}</span>
           </Link>
@@ -272,11 +281,9 @@ function DialogoTarea({
     // Propuesta por defecto: mañana a la misma hora. Es solo el valor inicial
     // de un campo editable, no un plazo de negocio — los plazos del negocio
     // viven en `parametros` (07-crm\CLAUDE.md §2).
-    const manana = new Date()
-    manana.setDate(manana.getDate() + 1)
-    manana.setSeconds(0, 0)
-    const desfase = manana.getTimezoneOffset() * 60_000
-    setVenceEl(new Date(manana.getTime() - desfase).toISOString().slice(0, 16))
+    // La conversion a hora local vive en fechas.ts (`aEntradaLocal`) desde el
+    // 29/09/2026: la agenda de visitas y el panel de contacto hacen la misma.
+    setVenceEl(aEntradaLocal(sumarDias(new Date(), 1)))
   }, [abierto])
 
   async function guardar(responsableId: string) {

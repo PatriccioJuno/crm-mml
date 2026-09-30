@@ -1,5 +1,8 @@
+import { Link } from 'react-router-dom'
 import { GripVertical } from 'lucide-react'
+import { InsigniaTemperatura } from '@/componentes/crm/InsigniaTemperatura'
 import { claseCampoCompacto } from '@/componentes/ui/input'
+import { rutaFicha } from '@/paginas/personas/FilaPersona'
 import { cn } from '@/lib/utils'
 import { formatearTelefono } from '@/lib/telefono'
 import {
@@ -37,6 +40,16 @@ import {
  * el manual de marca; se usa aqui porque el encargo lo pide expresamente. Lo
  * que NO cambia es la prohibicion del brief de diseno: nada de rojo/verde para
  * el estado de pago.
+ *
+ * ---------------------------------------------------------------------------
+ * TEMPERATURA Y FICHA (entrega 13, 30/09/2026)
+ * ---------------------------------------------------------------------------
+ * La insignia es la misma de Personas y de la ficha (texto + icono de linea,
+ * sin colores de semaforo), con la temperatura que calcula `v_cartera`. El
+ * nombre enlaza a la ficha: es donde se registra el contacto y se completa la
+ * cualificacion que R5 exige para pasar a Calificado. El enlace lleva
+ * `draggable={false}`: si no, arrastrar desde el nombre arrastraria la URL y
+ * no la tarjeta.
  */
 export function TarjetaEmbudo({
   tarjeta,
@@ -85,8 +98,27 @@ export function TarjetaEmbudo({
           aria-hidden="true"
         />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-bold leading-tight text-foreground">
-            {t.nombreCompleto}
+          <p className="flex min-w-0 items-center gap-2 text-sm font-bold leading-tight text-foreground">
+            {t.personaId === null ? (
+              <span className="truncate">{t.nombreCompleto}</span>
+            ) : (
+              <Link
+                to={rutaFicha({ personaId: t.personaId, id: t.id })}
+                draggable={false}
+                className="truncate underline-offset-2 hover:underline focus-visible:underline"
+                title={`Abrir la ficha de ${t.nombreCompleto}`}
+              >
+                {t.nombreCompleto}
+              </Link>
+            )}
+            {t.temperatura !== null && (
+              <InsigniaTemperatura
+                temperatura={t.temperatura}
+                motivo={t.temperaturaMotivo}
+                compacta
+                className="shrink-0"
+              />
+            )}
           </p>
 
           <p className="mt-1 text-xs text-suelo-700">

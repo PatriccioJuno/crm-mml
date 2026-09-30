@@ -1,6 +1,6 @@
 # Pantalla: embudo (`/embudo`)
 
-🟢 Escrita · 10 de septiembre de 2026
+🟢 Escrita · 10 de septiembre de 2026 · actualizada en la entrega 13 (30 de septiembre de 2026)
 
 Los 10 estados del embudo en columnas, con arrastrar y soltar.
 
@@ -10,10 +10,21 @@ Los 10 estados del embudo en columnas, con arrastrar y soltar.
 |---|---|
 | `index.tsx` | la pantalla: consulta, filtros, movimiento optimista y aviso de rechazo |
 | `ColumnaEmbudo.tsx` | una columna = una zona donde se suelta |
-| `TarjetaEmbudo.tsx` | una tarjeta: nombre · teléfono · días sin contacto · responsable |
+| `TarjetaEmbudo.tsx` | una tarjeta: nombre (enlace a la ficha) · temperatura · teléfono · días sin contacto · responsable |
 | `FiltrosEmbudo.tsx` | los tres filtros (lanzamiento · responsable · origen) y su función de filtrado |
 | `../../lib/embudo.ts` | los 10 estados, el umbral de días, la consulta y `moverOportunidad` |
-| `../../../sql/08-vistas-embudo-e-inventario.sql` | la vista `v_embudo_tarjetas` — **hay que ejecutarla en Supabase** |
+| `../../../sql/13-seguimiento-comercial.sql` | la vista `v_cartera`, de la que lee el tablero desde la entrega 13 — **hay que ejecutarla en Supabase** |
+| `../../../sql/08-vistas-embudo-e-inventario.sql` | la vista `v_embudo_tarjetas`, de la que leía antes; se conserva (nada se borra) |
+
+## Entrega 13 (30/09/2026)
+
+- `cargarTarjetas` lee **`v_cartera`** en lugar de `v_embudo_tarjetas`: mismas columnas, misma
+  fórmula de `dias_sin_contacto`, más `temperatura` y `temperatura_motivo`. Así el tablero, Personas
+  y la ficha dicen la misma temperatura.
+- La tarjeta muestra `InsigniaTemperatura` (compacta, con el motivo) y el **nombre enlaza a la
+  ficha** (`/personas/:personaId?o=:oportunidadId`). El enlace no es arrastrable, para que arrastrar
+  desde el nombre mueva la tarjeta y no la URL.
+- Tras mover una tarjeta se invalidan también `['cartera']`, `['ficha']` y `['hoy']`.
 
 ## Las tres cosas que no se pueden cambiar sin romper una regla
 

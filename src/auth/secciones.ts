@@ -90,20 +90,14 @@ export const SECCIONES: readonly Seccion[] = [
     fuente: '02-rls.sql · tareas_leer + oport_leer + sep_leer',
   },
   {
-    clave: 'embudo',
-    ruta: '/embudo',
-    etiqueta: 'Embudo',
-    Icono: LayoutList,
-    rolesQueVen: TODOS,
-    // `comercial` entra por la otra rama de la politica (responsable_id = auth.uid()):
-    // ve el embudo, pero solo con SUS oportunidades dentro. Eso lo filtra la base.
-    fuente: '02-rls.sql · oport_leer',
-  },
-  {
     clave: 'personas',
     ruta: '/personas',
     etiqueta: 'Personas',
     Icono: Users,
+    // Segunda del menu desde la entrega 13 (30/09/2026): es donde el vendedor
+    // pasa el dia —cartera, fríos, bandeja web y la ficha de cada prospecto—,
+    // asi que va justo despues de Hoy. El Embudo baja detras de Registro
+    // rapido porque ahora es la vista de conjunto, no la de trabajo.
     rolesQueVen: TODOS,
     fuente: '02-rls.sql · personas_leer (enumera los cinco roles)',
   },
@@ -115,8 +109,21 @@ export const SECCIONES: readonly Seccion[] = [
     // Unica seccion que el menu esconde hoy: es puro alta de datos, y a
     // `contabilidad` y `lectura` el INSERT les fallaria en la base. Mostrarles
     // el formulario solo serviria para que perdieran el tiempo escribiendolo.
+    // El Modo llamadas (/cola) cuelga de esta misma seccion en rutas.tsx: es
+    // registrar contactos en serie, y a esos dos roles la base tambien se lo
+    // rechazaria.
     rolesQueVen: REGISTRAN,
     fuente: '02-rls.sql · personas_crear + oport_crear',
+  },
+  {
+    clave: 'embudo',
+    ruta: '/embudo',
+    etiqueta: 'Embudo',
+    Icono: LayoutList,
+    rolesQueVen: TODOS,
+    // `comercial` entra por la otra rama de la politica (responsable_id = auth.uid()):
+    // ve el embudo, pero solo con SUS oportunidades dentro. Eso lo filtra la base.
+    fuente: '02-rls.sql · oport_leer',
   },
   {
     clave: 'inventario',

@@ -78,3 +78,40 @@ export function textoVencimiento(vencimiento: Date | string | null | undefined):
   if (dias === -1) return 'venció ayer'
   return `venció hace ${Math.abs(dias)} días`
 }
+
+/** "mié 30/09 · 19:30" — para visitas y próximas tareas, donde importa el día de la semana. */
+export function diaYHora(valor: Date | string | null | undefined): string {
+  const fecha = aFecha(valor)
+  return fecha ? format(fecha, "EEE dd/MM '·' HH:mm", { locale: es }) : '—'
+}
+
+/**
+ * Fecha → valor de un `<input type="datetime-local">` ("2026-09-30T19:30"), en
+ * la hora del dispositivo. Vivia en linea dentro de hoy/AccionesFila.tsx; se
+ * saco aqui el 29/09/2026 porque la agenda de visitas y el panel de contacto
+ * necesitan la misma conversion, y dos copias de «como se lee la hora local»
+ * son dos formas de equivocarse de hora.
+ */
+export function aEntradaLocal(valor: Date | string | null | undefined): string {
+  const fecha = aFecha(valor)
+  if (fecha === null) return ''
+  const local = new Date(fecha.getTime() - fecha.getTimezoneOffset() * 60_000)
+  return local.toISOString().slice(0, 16)
+}
+
+/**
+ * Valor de un `<input type="datetime-local">` → ISO 8601 con zona (lo que
+ * espera un `timestamptz`). `null` si esta vacio o no es una fecha.
+ */
+export function deEntradaLocal(entrada: string): string | null {
+  if (entrada.trim() === '') return null
+  const fecha = new Date(entrada)
+  return isValid(fecha) ? fecha.toISOString() : null
+}
+
+/** `base` + `dias` dias de calendario, conservando la hora. No redondea ni recorta. */
+export function sumarDias(base: Date, dias: number): Date {
+  const resultado = new Date(base.getTime())
+  resultado.setDate(resultado.getDate() + dias)
+  return resultado
+}

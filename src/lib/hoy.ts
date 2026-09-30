@@ -1,3 +1,5 @@
+import type { Rol } from '@/auth/tipos-sesion'
+import { contarCartera } from '@/lib/cartera'
 import { supabase } from '@/lib/supabase'
 import { entero, leerLote, reventar, texto, type Lote } from '@/lib/lectura'
 import {
@@ -54,6 +56,52 @@ import {
 export const DIAS_VIGILANCIA_SEPARACION = 3
 
 /**
+ * Tope de filas de cada bloque de Hoy. Limite TECNICO, no de negocio: que la
+ * pantalla no traiga mil filas si el seguimiento lleva semanas parado. Se
+ * exporta para que BloqueHoy pueda decir «50+» y avisar cuando un bloque llega
+ * justo al tope, en vez de ensenar una lista recortada con cara de completa
+ * (mismo criterio que LIMITE_CARTERA y LIMITE_TARJETAS).
+ */
+export const LIMITE_HOY = 50
+
+/**
+ * 🟡 Copia de `LIMITE_PROXIMAS` de src/lib/visitas.ts, que no se exporta. Solo
+ * sirve para el aviso de «puede haber mas» del bloque de visitas: si alguien
+ * cambia el tope alli, este aviso deja de saltar a tiempo (no rompe nada mas).
+ * Lo correcto es exportarlo desde visitas.ts y borrar esta copia.
+ */
+export const LIMITE_VISITAS_PROXIMAS = 100
+
+/**
+ * Ventana del bloque «Visitas de hoy y mañana»: desde hace 2 horas (una visita
+ * que empezo hace un rato sigue abierta hasta que alguien la marque realizada
+ * o no asistio, y es justo la que hay que cerrar) hasta el final de mañana.
+ * No es un plazo comercial: es cuanto calendario cabe en una pantalla de inicio.
+ */
+export function ventanaVisitasHoy(ahora: Date = new Date()): { desde: Date; hasta: Date } {
+  const desde = new Date(ahora.getTime() - 2 * 60 * 60_000)
+  const hasta = new Date(ahora.getTime())
+  hasta.setDate(hasta.getDate() + 1)
+  hasta.setHours(23, 59, 59, 999)
+  return { desde, hasta }
+}
+
+/**
+ * Leads activos que nadie ha contactado todavia (`total_contactos = 0`): la
+ * llamada a la accion «→ Modo llamadas». El comercial cuenta los SUYOS —es su
+ * cola—; Direccion y Administracion, todos los que RLS les deja ver, que es lo
+ * que necesitan para repartir. Es la misma cola que abre /cola?vista=nuevos.
+ */
+export function contarLeadsNuevos(rol: Rol, yo: string): Promise<number> {
+  return contarCartera({
+    vista: 'activos',
+    responsable: rol === 'comercial' ? 'mios' : 'todos',
+    yo,
+    soloNuevos: true,
+  })
+}
+
+/**
  * Los 10 estados del embudo y sus etiquetas viven en src/lib/embudo.ts, que es
  * de quien son. Se re-exportan aqui porque esta pantalla ya los importaba de
  * este archivo, y porque tener dos mapas de etiquetas en dos modulos es como
@@ -98,7 +146,7 @@ export async function cargarSeparacionesEnRiesgo(): Promise<Lote<SeparacionVigil
       `dias_para_fin_devolucion.lte.${DIAS_VIGILANCIA_SEPARACION},` +
         `dias_para_fin_precio.lte.${DIAS_VIGILANCIA_SEPARACION}`,
     )
-    .limit(50)
+    .limit(LIMITE_HOY)
 
   reventar('No se pudieron leer las separaciones en vigilancia', error)
   return leerLote(data, interpretarSeparacion)
@@ -115,7 +163,7 @@ export async function cargarSeparacionesPorVerificar(): Promise<Lote<SeparacionV
     .select(COLUMNAS_SEPARACION)
     .is('verificada_el', null)
     .eq('estado', 'pendiente_verificacion')
-    .limit(50)
+    .limit(LIMITE_HOY)
 
   reventar('No se pudieron leer las separaciones por verificar', error)
   return leerLote(data, interpretarSeparacion)
@@ -185,7 +233,7 @@ export async function cargarTareasVencidas(responsableId: string): Promise<Lote<
     .is('completada_el', null)
     .lt('vence_el', new Date().toISOString())
     .order('vence_el', { ascending: true })
-    .limit(50)
+    .limit(LIMITE_HOY)
 
   reventar('No se pudieron leer tus tareas vencidas', error)
   return leerLote(data, interpretarTarea)
@@ -210,7 +258,7 @@ export async function cargarTareasDeHoy(responsableId: string): Promise<Lote<Tar
     .gte('vence_el', new Date().toISOString())
     .lte('vence_el', finDelDia.toISOString())
     .order('vence_el', { ascending: true })
-    .limit(50)
+    .limit(LIMITE_HOY)
 
   reventar('No se pudieron leer las tareas de hoy', error)
   return leerLote(data, interpretarTarea)
@@ -267,7 +315,7 @@ export async function cargarSinSiguientePaso(): Promise<Lote<SinSiguientePaso>> 
       'id, persona_id, nombre_completo, telefono_e164, estado, lanzamiento, ' +
         'fecha_ultimo_contacto, dias_sin_contacto',
     )
-    .limit(50)
+    .limit(LIMITE_HOY)
 
   reventar('No se pudieron leer las oportunidades sin siguiente paso', error)
   return leerLote(data, interpretarSinPaso)
