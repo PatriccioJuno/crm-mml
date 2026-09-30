@@ -29,12 +29,33 @@ export function ImportarInventario({ alCargar }: { alCargar: () => void }) {
   const [ocupado, setOcupado] = useState(false)
   const [hecho, setHecho] = useState<CargaHecha | null>(null)
 
-  async function analizar() {
-    if (csv === null || json === null) return
+  /**
+   * Recibe lo que se eligió o se arrastró (uno o los dos archivos a la vez) y
+   * reconoce cuál es cuál por la extensión. Con los dos, muestra el cruce solo:
+   * el 30/09/2026 la carga se quedó sin hacer porque los dos recuadros no
+   * parecían botones y «Cargar» seguía gris sin decir por qué.
+   */
+  function recibir(lista: FileList | null) {
+    if (lista === null) return
+    let nuevoCsv = csv
+    let nuevoJson = json
+    for (const f of Array.from(lista)) {
+      const n = f.name.toLowerCase()
+      if (n.endsWith('.csv')) nuevoCsv = f
+      else if (n.endsWith('.json')) nuevoJson = f
+    }
+    setCsv(nuevoCsv)
+    setJson(nuevoJson)
+    setCarga(null)
+    if (nuevoCsv !== null && nuevoJson !== null) void analizar(nuevoCsv, nuevoJson)
+  }
+
+  async function analizar(archivoCsv: File | null = csv, archivoJson: File | null = json) {
+    if (archivoCsv === null || archivoJson === null) return
     setError(null)
     setOcupado(true)
     try {
-      const preparada = prepararCarga(await csv.text(), await json.text())
+      const preparada = prepararCarga(await archivoCsv.text(), await archivoJson.text())
       // La base valida permiso, inventario vacío y códigos únicos sin escribir nada.
       const prueba = await importarInventario(preparada, true)
       if (!prueba.ok) {
@@ -87,32 +108,44 @@ export function ImportarInventario({ alCargar }: { alCargar: () => void }) {
       </CardHeader>
       <CardContent className="space-y-4 text-sm">
         <p className="leading-relaxed text-suelo-700">
-          Elige los dos archivos desde tu equipo. Primero se muestra el cruce; nada se guarda hasta que
-          confirmes.
+          Toca el recuadro y elige <span className="font-bold">los dos archivos a la vez</span> (con Ctrl o
+          Mayús), o arrástralos encima. Primero se muestra el cruce; nada se guarda hasta que confirmes.
         </p>
 
-        <div className="grid gap-3 sm:grid-cols-2">
-          <SelectorArchivo
-            etiqueta="1 · Cuadro de áreas del plano"
-            ayuda="00-fuente-de-verdad / inventario-unidades.csv"
-            aceptar=".csv,text/csv"
+        <label
+          className="flex min-h-28 cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed border-azul/40 bg-white p-5 text-center hover:border-azul focus-within:ring-2 focus-within:ring-azul"
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault()
+            recibir(e.dataTransfer.files)
+          }}
+        >
+          <FileUp className="h-7 w-7 text-azul" aria-hidden="true" />
+          <span className="font-black text-azul">Elegir los dos archivos</span>
+          <input
+            type="file"
+            multiple
+            accept=".csv,.json,text/csv,application/json"
+            className="sr-only"
+            onChange={(e) => {
+              recibir(e.target.files)
+              e.target.value = ''
+            }}
+          />
+        </label>
+
+        <ul className="grid gap-2 sm:grid-cols-2">
+          <EstadoArchivo
+            etiqueta="Cuadro de áreas del plano"
+            ruta="D:\SCPCMO\00-fuente-de-verdad\inventario-unidades.csv"
             archivo={csv}
-            alElegir={(f) => {
-              setCsv(f)
-              setCarga(null)
-            }}
           />
-          <SelectorArchivo
-            etiqueta="2 · Inventario gráfico"
-            ayuda="02-marketing / diseño / inventario grafico / data / seed.json"
-            aceptar=".json,application/json"
+          <EstadoArchivo
+            etiqueta="Inventario gráfico"
+            ruta="D:\SCPCMO\02-marketing\diseño\inventario grafico\data\seed.json"
             archivo={json}
-            alElegir={(f) => {
-              setJson(f)
-              setCarga(null)
-            }}
           />
-        </div>
+        </ul>
 
         {error !== null && (
           <p role="alert" className="flex items-start gap-2 rounded-md bg-alerta-suave p-3 font-bold text-alerta">
@@ -165,32 +198,22 @@ export function ImportarInventario({ alCargar }: { alCargar: () => void }) {
   )
 }
 
-function SelectorArchivo({
-  etiqueta,
-  ayuda,
-  aceptar,
-  archivo,
-  alElegir,
-}: {
-  etiqueta: string
-  ayuda: string
-  aceptar: string
-  archivo: File | null
-  alElegir: (f: File | null) => void
-}) {
+/** Qué archivo falta y dónde está en el equipo, o que ya se reconoció. */
+function EstadoArchivo({ etiqueta, ruta, archivo }: { etiqueta: string; ruta: string; archivo: File | null }) {
   return (
-    <label className="flex min-h-11 cursor-pointer flex-col gap-1 rounded-md border border-input bg-white p-3 focus-within:ring-2 focus-within:ring-azul">
-      <span className="flex items-center gap-2 font-bold text-azul">
-        <FileUp className="h-4 w-4" aria-hidden="true" />
-        {etiqueta}
+    <li className="flex items-start gap-2 rounded-md border border-border bg-white p-3">
+      {archivo === null ? (
+        <FileUp className="mt-0.5 h-4 w-4 shrink-0 text-suelo-500" aria-hidden="true" />
+      ) : (
+        <Check className="mt-0.5 h-4 w-4 shrink-0 text-azul" aria-hidden="true" />
+      )}
+      <span className="min-w-0">
+        <span className="block font-bold text-azul">
+          {etiqueta}
+          {archivo === null ? ' — falta' : ' — listo'}
+        </span>
+        <span className="block break-all text-xs text-suelo-500">{archivo?.name ?? ruta}</span>
       </span>
-      <span className="text-xs text-suelo-500">{archivo?.name ?? ayuda}</span>
-      <input
-        type="file"
-        accept={aceptar}
-        className="sr-only"
-        onChange={(e) => alElegir(e.target.files?.[0] ?? null)}
-      />
-    </label>
+    </li>
   )
 }
